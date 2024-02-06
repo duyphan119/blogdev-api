@@ -3,6 +3,7 @@ package com.api.web;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.api.article.ArticleResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;

@@ -28,9 +28,11 @@ public class ArticleResponse {
     @JsonProperty("introduction_text")
     private String introductionText;
 
-    private String content;
+    @JsonProperty("author_id")
+    private Long authorId;
 
-    private String author;
+    @JsonProperty("author_full_name")
+    private String authorFullName;
 
     @JsonProperty("created_at")
     private Date createdAt;

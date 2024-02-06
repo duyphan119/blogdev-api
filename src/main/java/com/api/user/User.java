@@ -59,6 +59,36 @@ public class User {
     @JsonProperty("image_url")
     private String imageUrl;
 
+    @Column(name = "twitter_url", nullable = true)
+    @JsonProperty("twitter_url")
+    private String twitterUrl;
+
+    @Column(name = "linkedin_url", nullable = true)
+    @JsonProperty("linkedin_url")
+    private String linkedinUrl;
+
+    @Column(name = "github_url", nullable = true)
+    @JsonProperty("github_url")
+    private String githubUrl;
+
+    @Column(nullable = true)
+    private String introduction;
+
+    @Column(name = "youtube_url", nullable = true)
+    @JsonProperty("youtube_url")
+    private String youtubeUrl;
+
+    @Column(name = "pinterest_url", nullable = true)
+    @JsonProperty("pinterest_url")
+    private String pinterestUrl;
+
+    @Column(name = "facebook_url", nullable = true)
+    @JsonProperty("facebook_url")
+    private String facebookUrl;
+
+    @Column(nullable = true)
+    private String career;
+
     @CreationTimestamp
     @Column(name = "created_at")
     @JsonProperty("created_at")

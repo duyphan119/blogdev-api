@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.api.article.Article;
 import com.api.article.ArticleRepository;
+import com.api.article.ArticleResponse;
 import com.api.category.Category;
 import com.api.category.CategoryRepository;
 import com.api.utils.Helper;
@@ -251,7 +252,8 @@ public class WebService implements IWebService {
         return articles.stream()
                 .map(article -> {
                     return ArticleResponse.builder()
-                            .author(article.getAuthor().getFullName())
+                            .authorFullName(article.getAuthor().getFullName())
+                            .authorId(article.getAuthor().getId())
                             .categoryName(article.getCategory().getName())
                             .categorySlug(article.getCategory().getSlug())
                             .id(article.getId())

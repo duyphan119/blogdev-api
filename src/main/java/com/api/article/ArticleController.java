@@ -44,7 +44,6 @@ public class ArticleController {
                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                 .data(PaginatedData.<ArticleResponse>builder()
                                                                 .rows(articlePage.getContent().stream().map(article -> {
-                                                                        article.setContent(null);
                                                                         return articleService.convertToArticleResponse(
                                                                                         article);
                                                                 }).collect(Collectors.toList()))
@@ -61,7 +60,7 @@ public class ArticleController {
                 if (articleOptional.isPresent()) {
                         return ResponseEntity.status(ApiConstant.STATUS_200)
                                         .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
-                                                        .data(articleService.convertToArticleResponse(
+                                                        .data(articleService.convertToArticleDetailResponse(
                                                                         articleOptional.get()))
                                                         .build());
                 }

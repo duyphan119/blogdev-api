@@ -1,7 +1,9 @@
-package com.api.web;
+package com.api.article;
 
 import java.util.Date;
 
+import com.api.category.Category;
+import com.api.user.Author;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +17,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArticleResponse {
+public class ArticleDetailResponse {
     private Long id;
 
     private String title;
@@ -28,14 +30,21 @@ public class ArticleResponse {
     @JsonProperty("introduction_text")
     private String introductionText;
 
-    private String author;
+    private String content;
+
+    private Author author;
 
     @JsonProperty("created_at")
     private Date createdAt;
 
-    @JsonProperty("category_name")
-    private String categoryName;
+    private Category category;
 
-    @JsonProperty("category_slug")
-    private String categorySlug;
+    @JsonProperty("is_longreads")
+    private Boolean isLongreads;
+
+    private Long views;
+
+    @JsonProperty("comment_count")
+    private Integer commentCount;
+
 }

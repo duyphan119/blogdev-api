@@ -13,5 +13,7 @@ public interface IArticleService {
 
     ArticleResponse convertToArticleResponse(Article article);
 
+    ArticleDetailResponse convertToArticleDetailResponse(Article article);
+
     Optional<Article> findBySlug(String slug);
 }

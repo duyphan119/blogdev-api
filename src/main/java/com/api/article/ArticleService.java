@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.api.user.Author;
 import com.api.utils.Helper;
 
 @Service
@@ -51,17 +52,49 @@ public class ArticleService implements IArticleService {
     @Override
     public ArticleResponse convertToArticleResponse(Article article) {
         return ArticleResponse.builder()
-                .author(article.getAuthor().getFullName())
+                .authorFullName(article.getAuthor().getFullName())
+                .authorId(article.getAuthor().getId())
                 .categoryName(article.getCategory().getName())
                 .categorySlug(article.getCategory().getSlug())
                 .id(article.getId())
                 .title(article.getTitle())
                 .slug(article.getSlug())
-                .content(article.getContent())
                 .imageUrl(article.getImageUrl())
                 .introductionText(article.getIntroductionText())
                 .createdAt(article.getCreatedAt())
                 .isLongreads(article.getIsLongreads())
+                .views(article.getViews())
+                .build();
+    }
+
+    @Override
+    public ArticleDetailResponse convertToArticleDetailResponse(Article article) {
+        return ArticleDetailResponse.builder()
+                .author(Author.builder()
+                        .email(article.getAuthor().getEmail())
+                        .twitterUrl(article.getAuthor().getTwitterUrl())
+                        .facebookUrl(article.getAuthor().getFacebookUrl())
+                        .youtubeUrl(article.getAuthor().getYoutubeUrl())
+                        .lastName(article.getAuthor().getLastName())
+                        .linkedinUrl(article.getAuthor().getLinkedinUrl())
+                        .githubUrl(article.getAuthor().getGithubUrl())
+                        .firstName(article.getAuthor().getFirstName())
+                        .fullName(article.getAuthor().getFullName())
+                        .introduction(article.getAuthor().getIntroduction())
+                        .id(article.getAuthor().getId())
+                        .pinterestUrl(article.getAuthor().getPinterestUrl())
+                        .imageUrl(article.getAuthor().getImageUrl())
+                        .career(article.getAuthor().getCareer())
+                        .build())
+                .category(article.getCategory())
+                .id(article.getId())
+                .title(article.getTitle())
+                .slug(article.getSlug())
+                .imageUrl(article.getImageUrl())
+                .introductionText(article.getIntroductionText())
+                .createdAt(article.getCreatedAt())
+                .isLongreads(article.getIsLongreads())
+                .content(article.getContent())
                 .views(article.getViews())
                 .build();
     }
