@@ -12,15 +12,15 @@ import com.api.user.CustomUserDetails;
 public class ApplicationAuditAware implements AuditorAware<Long> {
 
     @Override
-    public Optional<Long> getCurrentAuditor(){
+    public Optional<Long> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if(authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
             return Optional.empty();
-        } 
+        }
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        return Optional.ofNullable(userDetails.getUser().getId());    
+        return Optional.ofNullable(userDetails.getUser().getId());
     }
 
 }

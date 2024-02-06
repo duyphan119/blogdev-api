@@ -1,6 +1,4 @@
-package com.api.utils;
-
-import java.util.List;
+package com.api.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,14 +8,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginatedResponse<T> {
-    private List<T> rows;
-    @JsonProperty("total_pages")
-    private Integer totalPages;
-    private Long count;
+@Builder
+public class ArticleNoCategoryResponse {
+    private Long id;
+    private String title;
+    private String slug;
+    @JsonProperty("image_url")
+    private String imageUrl;
 }

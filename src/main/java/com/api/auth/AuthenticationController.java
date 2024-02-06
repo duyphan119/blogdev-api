@@ -8,9 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,42 +49,34 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequest body, HttpServletResponse response) {
         Optional<User> userOptional = userService.findByEmail(body.getEmail());
 
         if (userOptional.isPresent()) {
             try {
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                body.getEmail(),
-                                body.getPassword()));
+                authenticate(body.getEmail(), body.getPassword());
 
-                User user = userOptional.get();
-                CustomUserDetails userDetails = CustomUserDetails.builder().user(user).build();
-                var accessToken = jwtService.generateToken(userDetails);
-                var refreshToken = jwtService.generateRefreshToken(userDetails);
-                AuthenticationResponse authenticationResponse = AuthenticationResponse.builder()
-                        .accessToken(accessToken).refreshToken(refreshToken)
-                        .accessTokenExpired(jwtService.getJwtExpiration()).build();
+                AuthenticationResponse authenticationResponse = authenticationService
+                        .generateAuthenticationResponse(userOptional.get());
 
-                response.addCookie(generateCookieRefreshToken(refreshToken));
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                body.getEmail(),
-                                body.getPassword()));
+                response.addCookie(generateCookieRefreshToken(authenticationResponse.getRefreshToken()));
+
                 return ResponseEntity.status(ApiConstant.STATUS_200).body(
                         ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationResponse)
                                 .build());
             } catch (Exception e) {
                 return ResponseEntity.status(ApiConstant.STATUS_400)
-                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Mật khẩu chưa chính xác")
+                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Wrong password")
                                 .build());
             }
         }
 
         return ResponseEntity.status(ApiConstant.STATUS_400)
-                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Email này chưa được đăng ký").build());
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Email is available").build());
     }
 
     @PostMapping(value = "/register")
@@ -119,57 +108,47 @@ public class AuthenticationController {
                 userOptional = userService.create(user);
 
                 if (userOptional.isPresent()) {
-                    user = userOptional.get();
-                    CustomUserDetails userDetails = CustomUserDetails.builder().user(user).build();
-                    var accessToken = jwtService.generateToken(userDetails);
-                    var refreshToken = jwtService.generateRefreshToken(userDetails);
-                    AuthenticationResponse authenticationResponse = AuthenticationResponse.builder()
-                            .accessToken(accessToken).refreshToken(refreshToken)
-                            .accessTokenExpired(jwtService.getJwtExpiration()).build();
-
-                    response.addCookie(generateCookieRefreshToken(refreshToken));
-                    authenticationManager.authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    body.getEmail(),
-                                    body.getPassword()));
+                    AuthenticationResponse authenticationResponse = authenticationService
+                            .generateAuthenticationResponse(userOptional.get());
+                    response.addCookie(generateCookieRefreshToken(authenticationResponse.getRefreshToken()));
+                    authenticate(body.getEmail(), body.getPassword());
                     return ResponseEntity.status(ApiConstant.STATUS_201).body(
-                            ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationResponse)
+                            ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationService)
                                     .build());
                 }
             }
 
             return ResponseEntity.status(ApiConstant.STATUS_500)
                     .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
-                            .data("Có lỗi xảy ra trong quá trình đăng ký, vui lòng thử lại sau").build());
+                            .data("Something went wrong").build());
         }
 
         return ResponseEntity.status(ApiConstant.STATUS_400)
-                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Email này đã được đăng ký").build());
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Email is available").build());
     }
 
     @GetMapping("/profile")
     public ResponseEntity<Object> getProfile() {
-        System.out.println("-----profile------");
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            ProfileResponse profileResponse = ProfileResponse.builder()
-                    .fullName(userDetails.getUser().getFullName())
-                    .email(userDetails.getUser().getEmail())
-                    .imageUrl(userDetails.getUser().getImageUrl())
-                    .id(userDetails.getUser().getId())
-                    .build();
+            Optional<CustomUserDetails> userDetailsOptional = authenticationService.getUserDetails();
+            if (userDetailsOptional.isPresent()) {
+                ProfileResponse profileResponse = ProfileResponse.builder()
+                        .fullName(userDetailsOptional.get().getUser().getFullName())
+                        .email(userDetailsOptional.get().getUser().getEmail())
+                        .imageUrl(userDetailsOptional.get().getUser().getImageUrl())
+                        .id(userDetailsOptional.get().getUser().getId())
+                        .build();
 
-            return ResponseEntity.status(ApiConstant.STATUS_200).body(
-                    ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(profileResponse)
-                            .build());
+                return ResponseEntity.status(ApiConstant.STATUS_200).body(
+                        ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(profileResponse)
+                                .build());
+            }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(ApiConstant.STATUS_401)
-                    .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Something went wrong")
-                            .build());
         }
+        return ResponseEntity.status(ApiConstant.STATUS_401)
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Something went wrong")
+                        .build());
     }
 
     @PatchMapping("/refresh-token")
@@ -180,15 +159,10 @@ public class AuthenticationController {
             if (refreshToken != null) {
                 String userEmail = jwtService.extractUsername(refreshToken);
                 if (userEmail != null) {
-                    CustomUserDetails userDetails = CustomUserDetails.builder()
-                            .user(User.builder().email(userEmail).build()).build();
-                    var accessToken = jwtService.generateToken(userDetails);
-                    var newRefreshToken = jwtService.generateRefreshToken(userDetails);
-                    AuthenticationResponse authenticationResponse = AuthenticationResponse.builder()
-                            .accessToken(accessToken).refreshToken(newRefreshToken)
-                            .accessTokenExpired(jwtService.getJwtExpiration()).build();
+                    AuthenticationResponse authenticationResponse = authenticationService
+                            .generateAuthenticationResponse(userEmail);
 
-                    response.addCookie(generateCookieRefreshToken(newRefreshToken));
+                    response.addCookie(generateCookieRefreshToken(authenticationResponse.getRefreshToken()));
 
                     return ResponseEntity.status(ApiConstant.STATUS_200).body(
                             ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationResponse)
@@ -198,12 +172,12 @@ public class AuthenticationController {
         } catch (Exception e) {
             return ResponseEntity.status(ApiConstant.STATUS_401)
                     .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
-                            .data("Chưa đăng nhập").build());
+                            .data("Unauthorized").build());
         }
 
         return ResponseEntity.status(ApiConstant.STATUS_500)
                 .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
-                        .data("Có lỗi xảy ra trong quá trình đăng ký, vui lòng thử lại sau").build());
+                        .data("Something went wrong").build());
     }
 
     public Role findRoleOrCreate(String name) {
@@ -226,5 +200,11 @@ public class AuthenticationController {
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
         return cookie;
+    }
+
+    public void authenticate(String email, String password) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        email, password));
     }
 }

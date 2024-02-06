@@ -41,24 +41,32 @@ public class SecurityConfig {
         @Autowired
         private LogoutHandler logoutHandler;
 
-        private final String[] PUBLIC_URL_LIST_BY_GET_METHOD = {
-                        "/category",
-                        "/category/*"
-        };
-
-        private final String[] PUBLIC_URL_LIST_BY_POST_METHOD = {
-                        "/auth/login",
-                        "/auth/register"
-        };
-
         @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
                 return httpSecurity
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(GET, PUBLIC_URL_LIST_BY_GET_METHOD).permitAll()
-                                                .requestMatchers(POST, PUBLIC_URL_LIST_BY_POST_METHOD).permitAll()
-                                                .requestMatchers(GET, "/auth/profile").permitAll())
+                                                .requestMatchers(GET, "/category",
+                                                                "/category/*",
+                                                                "/article",
+                                                                "/article/*", "/article/slug/*", "/auth/profile",
+                                                                "/web/**")
+                                                .permitAll()
+                                                .requestMatchers(POST, "/auth/login",
+                                                                "/auth/register", "/upload/**", "/subscriber")
+                                                .permitAll()
+                                                .requestMatchers(GET, "/subscriber")
+                                                .hasAnyAuthority(RoleName.ADMIN.name())
+                                                .requestMatchers(POST, "/category", "/article")
+                                                .hasAnyAuthority(RoleName.ADMIN.name())
+                                                .requestMatchers(PATCH, "/category/*", "/article/*")
+                                                .hasAnyAuthority(RoleName.ADMIN.name())
+                                                .requestMatchers(DELETE, "/category/*", "/article/*", "/subscriber/*")
+                                                .hasAnyAuthority(RoleName.ADMIN.name())
+                                                .anyRequest()
+                                                .authenticated()
+                                //
+                                )
                                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                                 .authenticationProvider(authenticationProvider)
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
