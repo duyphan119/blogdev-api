@@ -3,7 +3,9 @@ package com.api.web;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.api.article.ArticleDetailResponse;
 import com.api.article.ArticleResponse;
+import com.api.article_comment.ArticleComment;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -14,21 +16,25 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class HomePageResponse {
-    @JsonProperty("today_articles")
+public class ArticleDetailPageResponse {
+    private ArticleDetailResponse article;
+
+    private List<ArticleComment> comments;
+
+    @JsonProperty("comment_count")
     @Builder.Default
-    private List<ArticleResponse> totalArticles = new ArrayList<>();
+    private Long commentCount = Long.valueOf(0);
+
+    @JsonProperty("recommend_articles")
+    @Builder.Default
+    private List<ArticleResponse> recommendArticles = new ArrayList<>();
 
     @JsonProperty("most_recent_articles")
     @Builder.Default
     private List<ArticleResponse> mostRecentArticles = new ArrayList<>();
-
-    @JsonProperty("longreads_articles")
-    @Builder.Default
-    private List<ArticleResponse> longreadsArticles = new ArrayList<>();
 
     @JsonProperty("most_views_articles")
     @Builder.Default
@@ -37,9 +43,6 @@ public class HomePageResponse {
     @JsonProperty("most_comments_articles")
     @Builder.Default
     private List<ArticleResponse> mostCommentsArticles = new ArrayList<>();
-
-    @Builder.Default
-    private List<CategoryArticleResponse> categories = new ArrayList<>();
 
     @JsonProperty("trending_articles")
     @Builder.Default

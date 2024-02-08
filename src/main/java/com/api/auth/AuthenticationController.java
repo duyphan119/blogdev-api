@@ -98,6 +98,8 @@ public class AuthenticationController {
                     .hashedPassword(passwordEncoder.encode(body.getPassword()))
                     .firstName(body.getFirstName())
                     .lastName(body.getLastName())
+                    .imageUrl("https://api.dicebear.com/7.x/adventurer/svg?seed="
+                            + body.getEmail().split("@")[0].substring(1) + body.getFirstName().toLowerCase())
                     .build();
 
             if (roleUser != null) {
@@ -113,7 +115,7 @@ public class AuthenticationController {
                     response.addCookie(generateCookieRefreshToken(authenticationResponse.getRefreshToken()));
                     authenticate(body.getEmail(), body.getPassword());
                     return ResponseEntity.status(ApiConstant.STATUS_201).body(
-                            ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationService)
+                            ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(authenticationResponse)
                                     .build());
                 }
             }
@@ -153,10 +155,10 @@ public class AuthenticationController {
 
     @PatchMapping("/refresh-token")
     public ResponseEntity<Object> refreshToken(HttpServletResponse response,
-            @CookieValue(ApiConstant.COOKIE_REFRESH_TOKEN) String refreshToken) {
-
+            @CookieValue(name = ApiConstant.COOKIE_REFRESH_TOKEN, defaultValue = "") String refreshToken) {
+        System.out.println("Refresh");
         try {
-            if (refreshToken != null) {
+            if (refreshToken != null && !refreshToken.equals("")) {
                 String userEmail = jwtService.extractUsername(refreshToken);
                 if (userEmail != null) {
                     AuthenticationResponse authenticationResponse = authenticationService
@@ -170,14 +172,14 @@ public class AuthenticationController {
                 }
             }
         } catch (Exception e) {
-            return ResponseEntity.status(ApiConstant.STATUS_401)
+            return ResponseEntity.status(ApiConstant.STATUS_500)
                     .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
-                            .data("Unauthorized").build());
+                            .data("Something went wrong").build());
         }
-
-        return ResponseEntity.status(ApiConstant.STATUS_500)
+        return ResponseEntity.status(ApiConstant.STATUS_401)
                 .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
-                        .data("Something went wrong").build());
+                        .data("Unauthorized").build());
+
     }
 
     public Role findRoleOrCreate(String name) {

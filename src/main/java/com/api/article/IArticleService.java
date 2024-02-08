@@ -16,4 +16,8 @@ public interface IArticleService {
     ArticleDetailResponse convertToArticleDetailResponse(Article article);
 
     Optional<Article> findBySlug(String slug);
+
+    Optional<Article> update(Article article);
+
+    Optional<Article> findById(Long id);
 }

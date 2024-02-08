@@ -22,7 +22,6 @@ public class AuthenticationService implements IAuthenticationService {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            System.out.println(authentication.isAuthenticated());
             return Optional.of(userDetails);
         } catch (Exception e) {
             return Optional.empty();

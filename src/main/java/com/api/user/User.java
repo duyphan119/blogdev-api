@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.api.article.Article;
+import com.api.article_comment.ArticleComment;
+import com.api.article_reply_comment.ArticleReplyComment;
 import com.api.role.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,34 +59,42 @@ public class User {
 
     @Column(name = "image_url", nullable = true)
     @JsonProperty("image_url")
-    private String imageUrl;
+    @Builder.Default
+    private String imageUrl = "";
 
     @Column(name = "twitter_url", nullable = true)
     @JsonProperty("twitter_url")
-    private String twitterUrl;
+    @Builder.Default
+    private String twitterUrl = "";
 
     @Column(name = "linkedin_url", nullable = true)
     @JsonProperty("linkedin_url")
-    private String linkedinUrl;
+    @Builder.Default
+    private String linkedinUrl = "";
 
     @Column(name = "github_url", nullable = true)
     @JsonProperty("github_url")
-    private String githubUrl;
+    @Builder.Default
+    private String githubUrl = "";
 
     @Column(nullable = true)
-    private String introduction;
+    @Builder.Default
+    private String introduction = "";
 
     @Column(name = "youtube_url", nullable = true)
     @JsonProperty("youtube_url")
-    private String youtubeUrl;
+    @Builder.Default
+    private String youtubeUrl = "";
 
     @Column(name = "pinterest_url", nullable = true)
     @JsonProperty("pinterest_url")
-    private String pinterestUrl;
+    @Builder.Default
+    private String pinterestUrl = "";
 
     @Column(name = "facebook_url", nullable = true)
     @JsonProperty("facebook_url")
-    private String facebookUrl;
+    @Builder.Default
+    private String facebookUrl = "";
 
     @Column(nullable = true)
     private String career;
@@ -108,6 +118,15 @@ public class User {
     @JsonIgnore
     private Set<Article> articles;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<ArticleComment> comments;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<ArticleReplyComment> replyComments;
+
+    @JsonProperty("full_name")
     public String getFullName() {
         return this.firstName + " " + this.lastName;
     }

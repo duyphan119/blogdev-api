@@ -104,4 +104,18 @@ public class ArticleService implements IArticleService {
         return this.articleRepo.findBySlug(slug);
     }
 
+    @Override
+    public Optional<Article> update(Article article) {
+        try {
+            return this.articleRepo.findById(articleRepo.save(article).getId());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Article> findById(Long id) {
+        return this.articleRepo.findById(id);
+    }
+
 }
