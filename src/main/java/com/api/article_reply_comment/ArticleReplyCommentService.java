@@ -42,7 +42,7 @@ public class ArticleReplyCommentService implements IArticleReplyCommentService {
     }
 
     @Override
-    public Boolean delete(Long id) {
+    public boolean delete(Long id) {
         try {
             this.articleReplyCommentRepo.deleteById(id);
             return true;

@@ -3,9 +3,15 @@ package com.api.user;
 import java.util.Optional;
 
 public interface IUserService {
-    public Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
 
-    public Optional<User> create(User user);
+    Optional<User> create(User user);
 
-    public long countAll();
+    long countAll();
+
+    Optional<User> update(User user);
+
+    Author convertUserToAuthor(User user);
+
+    User convertAuthorToUser(Author author);
 }

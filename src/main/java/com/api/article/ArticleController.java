@@ -53,6 +53,22 @@ public class ArticleController {
                                                 .build());
         }
 
+        @GetMapping("/recommend/slug/{slug}")
+        public ResponseEntity<Object> getRecommendArticleList(@PathVariable("slug") String slug) {
+                Page<Article> articlePage = this.articleService.paginateRecommendArticleList(slug);
+                return ResponseEntity.status(ApiConstant.STATUS_200)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                .data(PaginatedData.<ArticleResponse>builder()
+                                                                .rows(articlePage.getContent().stream().map(article -> {
+                                                                        return articleService.convertToArticleResponse(
+                                                                                        article);
+                                                                }).collect(Collectors.toList()))
+                                                                .totalPages(articlePage.getTotalPages())
+                                                                .count(articlePage.getTotalElements())
+                                                                .build())
+                                                .build());
+        }
+
         @GetMapping("/slug/{slug}")
         public ResponseEntity<Object> getArticleBySlug(@PathVariable("slug") String slug) {
                 Optional<Article> articleOptional = articleService.findBySlug(slug);

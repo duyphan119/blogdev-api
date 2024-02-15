@@ -50,26 +50,30 @@ public class SecurityConfig {
                                                                 "/category/*",
                                                                 "/article",
                                                                 "/article/*", "/article/slug/*", "/auth/profile",
-                                                                "/web/**", "/article-comment", "/article-reply-comment")
+                                                                "/web/**", "/article-comment", "/article-reply-comment",
+                                                                "/article/recommend/slug/*")
                                                 .permitAll()
                                                 .requestMatchers(POST, "/auth/login",
-                                                                "/auth/register", "/upload/**", "/subscriber")
+                                                                "/auth/register", "/upload/**", "/subscriber",
+                                                                "/contact")
                                                 .permitAll()
                                                 .requestMatchers(PATCH, "/auth/refresh-token")
                                                 .permitAll()
-                                                .requestMatchers(GET, "/subscriber")
+                                                // Role Admin
+                                                .requestMatchers(GET, "/subscriber", "/role", "/contact")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 .requestMatchers(POST, "/category", "/article")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 .requestMatchers(PATCH, "/category/*", "/article/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
-                                                .requestMatchers(DELETE, "/category/*", "/article/*", "/subscriber/*")
+                                                .requestMatchers(DELETE, "/category/*", "/article/*", "/subscriber/*",
+                                                                "/contact/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
-
+                                                // Role Admin && user
                                                 .requestMatchers(POST, "/article-comment", "/article-reply-comment")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(PATCH, "/article-comment/*",
-                                                                "/article-reply-comment/*")
+                                                                "/article-reply-comment/*", "/auth/profile")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(DELETE, "/article-comment/*",
                                                                 "/article-reply-comment/*")

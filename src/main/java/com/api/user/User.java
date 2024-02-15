@@ -126,6 +126,10 @@ public class User {
     @JsonIgnore
     private Set<ArticleReplyComment> replyComments;
 
+    @OneToMany(mappedBy = "refUser", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<ArticleReplyComment> refReplyComments;
+
     @JsonProperty("full_name")
     public String getFullName() {
         return this.firstName + " " + this.lastName;

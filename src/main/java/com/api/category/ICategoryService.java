@@ -13,7 +13,7 @@ public interface ICategoryService {
 
     Optional<Category> update(Category category);
 
-    Boolean delete(Long id);
+    boolean delete(Long id);
 
     String generateSlug(String name);
 }

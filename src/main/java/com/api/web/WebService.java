@@ -223,4 +223,26 @@ public class WebService implements IWebService {
         return articleDetailPageResponse;
     }
 
+    @Override
+    public ArticleListResponse findArticleListData(String articleSlug) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(Long.valueOf(-1));
+
+        if (!articleSlug.equals("")) {
+            Optional<Article> articleOptional = this.articleRepo.findBySlug(articleSlug);
+            if (articleOptional.isPresent()) {
+                ids.add(articleOptional.get().getId());
+            }
+        }
+
+        List<ArticleResponse> mostRecentArticles = getMostRecentArticles(ids);
+        List<ArticleResponse> mostViewsArticles = getMostViewsArticles(ids);
+        List<ArticleResponse> mostCommentsArticles = getMostCommentsArticles(ids);
+        List<ArticleResponse> trendingArticles = getTrendingArticles(ids);
+
+        return ArticleListResponse.builder().mostCommentsArticles(mostCommentsArticles)
+                .mostRecentArticles(mostRecentArticles).mostViewsArticles(mostViewsArticles)
+                .recommendArticles(trendingArticles).trendingArticles(trendingArticles).build();
+    }
+
 }

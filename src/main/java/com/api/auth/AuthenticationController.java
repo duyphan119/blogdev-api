@@ -21,6 +21,7 @@ import com.api.jwt.JwtService;
 import com.api.role.Role;
 import com.api.role.RoleName;
 import com.api.role.RoleService;
+import com.api.user.Author;
 import com.api.user.CustomUserDetails;
 import com.api.user.User;
 import com.api.user.UserService;
@@ -134,16 +135,48 @@ public class AuthenticationController {
         try {
             Optional<CustomUserDetails> userDetailsOptional = authenticationService.getUserDetails();
             if (userDetailsOptional.isPresent()) {
-                ProfileResponse profileResponse = ProfileResponse.builder()
-                        .fullName(userDetailsOptional.get().getUser().getFullName())
-                        .email(userDetailsOptional.get().getUser().getEmail())
-                        .imageUrl(userDetailsOptional.get().getUser().getImageUrl())
-                        .id(userDetailsOptional.get().getUser().getId())
-                        .build();
+                Author author = this.userService.convertUserToAuthor(userDetailsOptional.get().getUser());
 
                 return ResponseEntity.status(ApiConstant.STATUS_200).body(
-                        ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(profileResponse)
+                        ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(author)
                                 .build());
+            }
+
+        } catch (Exception e) {
+        }
+        return ResponseEntity.status(ApiConstant.STATUS_401)
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR).data("Something went wrong")
+                        .build());
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<Object> updateProfile(@RequestBody Author body) {
+        try {
+            Optional<CustomUserDetails> userDetailsOptional = authenticationService.getUserDetails();
+            if (userDetailsOptional.isPresent()) {
+
+                Optional<User> userOptional = this.userService
+                        .findByEmail(userDetailsOptional.get().getUser().getEmail());
+
+                if (userOptional.isPresent()) {
+                    User user = this.userService.convertAuthorToUser(body);
+                    user.setId(userOptional.get().getId());
+                    user.setCreatedAt(userOptional.get().getCreatedAt());
+                    user.setUpdatedAt(userOptional.get().getUpdatedAt());
+                    user.setRoles(userOptional.get().getRoles());
+                    user.setHashedPassword(userOptional.get().getHashedPassword());
+
+                    Optional<User> updatedUserOptional = this.userService.update(user);
+                    if (updatedUserOptional.isPresent()) {
+
+                        Author author = this.userService.convertUserToAuthor(updatedUserOptional.get());
+
+                        return ResponseEntity.status(ApiConstant.STATUS_200).body(
+                                ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(author)
+                                        .build());
+                    }
+                }
+
             }
 
         } catch (Exception e) {

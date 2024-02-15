@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.article.Article;
+import com.api.article.ArticleService;
 import com.api.auth.AuthenticationService;
 import com.api.user.CustomUserDetails;
 import com.api.utils.ApiConstant;
@@ -29,6 +31,9 @@ public class ArticleCommentController {
 
         @Autowired
         private AuthenticationService authenticationService;
+
+        @Autowired
+        private ArticleService articleService;
 
         @GetMapping()
         public ResponseEntity<Object> getArticleCommentList(
@@ -64,6 +69,10 @@ public class ArticleCommentController {
                         body.setUser(userDetailsOptional.get().getUser());
                         Optional<ArticleComment> articleCommentOptional = this.articleCommentService.create(body);
                         if (articleCommentOptional.isPresent()) {
+                                Article article = articleCommentOptional.get().getArticle();
+
+                                article.setCommentCount(article.getCommentCount() - 1);
+                                this.articleService.update(article);
                                 return ResponseEntity.status(ApiConstant.STATUS_201)
                                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                                 .data(articleCommentOptional.get())
@@ -102,7 +111,6 @@ public class ArticleCommentController {
                                                                         .build());
                                 }
                         } else {
-                                System.out.println("Không");
                                 return ResponseEntity.status(ApiConstant.STATUS_403)
                                                 .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
                                                                 .data("Forbidden")
@@ -134,6 +142,10 @@ public class ArticleCommentController {
 
                                         Boolean isDeleted = this.articleCommentService.delete(id);
                                         if (isDeleted) {
+                                                Article article = articleCommentOptional.get().getArticle();
+
+                                                article.setCommentCount(article.getCommentCount() - 1);
+                                                this.articleService.update(article);
                                                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                                                 .body(ApiResponse.builder()
                                                                                 .message(ApiConstant.MSG_SUCCESS)

@@ -46,9 +46,14 @@ public class ArticleReplyComment {
     @JsonProperty("article_comment")
     private ArticleComment articleComment;
 
-    @Column(name = "ref_user_id")
-    @JsonProperty("ref_user_id")
-    private Long refUserId;
+    // @Column(name = "ref_user_id")
+    // @JsonProperty("ref_user_id")
+    // private Long refUserId;
+
+    @ManyToOne
+    @JoinColumn(name = "ref_user_id")
+    @JsonProperty("ref_user")
+    private User refUser;
 
     @Column(name = "created_at")
     @JsonProperty("created_at")
@@ -59,9 +64,4 @@ public class ArticleReplyComment {
     @JsonProperty("updated_at")
     @UpdateTimestamp
     private Date updatedAt;
-
-    @JsonProperty("ref_user")
-    public User getRefUser() {
-        return User.builder().id(this.refUserId).build();
-    }
 }

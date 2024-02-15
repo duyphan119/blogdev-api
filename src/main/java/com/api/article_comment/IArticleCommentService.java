@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 public interface IArticleCommentService {
     Optional<ArticleComment> create(ArticleComment articleComment);
 
-    Boolean delete(Long id);
+    boolean delete(Long id);
 
     Page<ArticleComment> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword);
 

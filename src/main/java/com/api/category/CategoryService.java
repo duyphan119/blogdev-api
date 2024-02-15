@@ -49,7 +49,7 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public Boolean delete(Long id) {
+    public boolean delete(Long id) {
         try {
             this.categoryRepo.deleteById(id);
             return true;

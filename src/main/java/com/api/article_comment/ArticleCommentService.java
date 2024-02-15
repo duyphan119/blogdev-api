@@ -47,7 +47,7 @@ public class ArticleCommentService implements IArticleCommentService {
     }
 
     @Override
-    public Boolean delete(Long id) {
+    public boolean delete(Long id) {
         try {
             this.articleCommentRepo.deleteById(id);
             return true;
@@ -63,13 +63,14 @@ public class ArticleCommentService implements IArticleCommentService {
         return this.articleCommentRepo.findAll(pageable);
     }
 
-    @Override
-    public Page<ArticleComment> paginateByArticleSlug(String articleSlug, Integer limit, Integer page, String sortBy,
-            String sortType, String keyword) {
-        Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
+    // @Override
+    // public Page<ArticleComment> paginateByArticleSlug(String articleSlug, int
+    // limit, int page, String sortBy,
+    // String sortType, String keyword) {
+    // Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
 
-        return this.articleCommentRepo.findByArticle_Slug(articleSlug, pageable);
-    }
+    // return this.articleCommentRepo.findByArticle_Slug(articleSlug, pageable);
+    // }
 
     @Override
     public Optional<ArticleComment> findById(Long id) {
@@ -97,5 +98,13 @@ public class ArticleCommentService implements IArticleCommentService {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Page<ArticleComment> paginateByArticleSlug(String articleSlug, Integer limit, Integer page, String sortBy,
+            String sortType, String keyword) {
+        Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
+
+        return this.articleCommentRepo.findByArticle_Slug(articleSlug, pageable);
     }
 }

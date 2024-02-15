@@ -9,5 +9,5 @@ public interface ISubscriberService {
 
     Page<Subscriber> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword);
 
-    Boolean delete(Long id);
+    boolean delete(Long id);
 }

@@ -35,7 +35,7 @@ public class SubscriberService implements ISubscriberService {
     }
 
     @Override
-    public Boolean delete(Long id) {
+    public boolean delete(Long id) {
         try {
             this.subscriberRepo.deleteById(id);
             return true;

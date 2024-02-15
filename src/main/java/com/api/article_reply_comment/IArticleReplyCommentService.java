@@ -13,7 +13,7 @@ public interface IArticleReplyCommentService {
 
     List<ArticleReplyComment> findByArticleCommentId(Long articleCommentId);
 
-    Boolean delete(Long id);
+    boolean delete(Long id);
 
     Optional<ArticleReplyComment> update(ArticleReplyComment articleReplyComment);
 

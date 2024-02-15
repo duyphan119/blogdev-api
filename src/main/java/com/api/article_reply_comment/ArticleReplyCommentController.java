@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,13 +44,18 @@ public class ArticleReplyCommentController {
                         @RequestParam(name = "sort_type", defaultValue = "desc") String sortType,
                         @RequestParam(name = "q", defaultValue = "") String keyword,
                         @RequestParam(name = "article_comment_id", defaultValue = "0") String articleCommentIdStr) {
-                Page<ArticleReplyComment> articleReplyCommentPage = this.articleReplyCommentService
-                                .paginateByArticleCommentId(
-                                                Long.valueOf(articleCommentIdStr),
-                                                Integer.parseInt(limit),
-                                                Integer.parseInt(page),
-                                                sortBy,
-                                                sortType, keyword);
+                Integer pageSize = Integer.parseInt(limit);
+                Page<ArticleReplyComment> articleReplyCommentPage = Page.empty();
+                if (pageSize.compareTo(0) > 0) {
+                        articleReplyCommentPage = this.articleReplyCommentService
+                                        .paginateByArticleCommentId(
+                                                        Long.valueOf(articleCommentIdStr),
+                                                        Integer.parseInt(limit),
+                                                        Integer.parseInt(page),
+                                                        sortBy,
+                                                        sortType, keyword);
+                }
+
                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                 .data(PaginatedData.<ArticleReplyComment>builder()
@@ -106,6 +112,48 @@ public class ArticleReplyCommentController {
                                                 .build());
         }
 
+        @PatchMapping("/{id}")
+        public ResponseEntity<Object> updateArticleReplyComment(@RequestBody ArticleReplyComment body,
+                        @PathVariable("id") Long id) {
+                Optional<ArticleReplyComment> articleReplyCommentOptional = this.articleReplyCommentService
+                                .findById(id);
+
+                if (articleReplyCommentOptional.isPresent()) {
+                        Optional<CustomUserDetails> userDetailsOptional = this.authenticationService.getUserDetails();
+                        if (userDetailsOptional.isPresent()
+                                        && userDetailsOptional.get().getUser().getId()
+                                                        .equals(articleReplyCommentOptional.get()
+                                                                        .getUser()
+                                                                        .getId())) {
+                                body.setUser(userDetailsOptional.get().getUser());
+
+                                articleReplyCommentOptional = this.articleReplyCommentService.update(body);
+                                if (articleReplyCommentOptional.isPresent()) {
+                                        return ResponseEntity.status(ApiConstant.STATUS_201)
+                                                        .body(ApiResponse.builder()
+                                                                        .message(ApiConstant.MSG_SUCCESS)
+                                                                        .data(articleReplyCommentOptional.get())
+                                                                        .build());
+                                }
+                        } else {
+                                System.out.println("Không");
+                                return ResponseEntity.status(ApiConstant.STATUS_403)
+                                                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                                .data("Forbidden")
+                                                                .build());
+                        }
+
+                } else {
+                        return ResponseEntity.status(ApiConstant.STATUS_404)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                        .data("Not Found")
+                                                        .build());
+                }
+
+                return ResponseEntity.status(ApiConstant.STATUS_500).body(ApiResponse.builder()
+                                .message(ApiConstant.MSG_ERROR).data("Something went wrong").build());
+        }
+
         @DeleteMapping("/{id}")
         public ResponseEntity<Object> deleteArticleReplyComment(@PathVariable("id") Long id) {
                 Optional<ArticleReplyComment> articleReplyCommentOptional = this.articleReplyCommentService
@@ -121,6 +169,10 @@ public class ArticleReplyCommentController {
 
                                         Boolean isDeleted = this.articleReplyCommentService.delete(id);
                                         if (isDeleted) {
+                                                ArticleComment articleComment = articleReplyCommentOptional.get()
+                                                                .getArticleComment();
+                                                articleComment.setReplyCount(articleComment.getReplyCount() - 1);
+                                                this.articleCommentService.update(articleComment);
                                                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                                                 .body(ApiResponse.builder()
                                                                                 .message(ApiConstant.MSG_SUCCESS)

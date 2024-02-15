@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.api.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
@@ -47,10 +48,12 @@ public class Role {
     @Column(name = "updated_at")
     @JsonProperty("updated_at")
     @UpdateTimestamp
+    @JsonIgnore
     private Date updatedAt;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     @Builder.Default
+    @JsonIgnore
     private Set<User> users = new LinkedHashSet<>();
 
 }

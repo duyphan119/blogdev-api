@@ -118,4 +118,16 @@ public class ArticleService implements IArticleService {
         return this.articleRepo.findById(id);
     }
 
+    @Override
+    public Page<Article> paginateRecommendArticleList(String articleSlug) {
+        Optional<Article> articleOptional = this.articleRepo.findBySlug(articleSlug);
+        Pageable pageable = helper.generatePageable(8, 1, "createdAt", "desc");
+        if (articleOptional.isPresent()) {
+            return this.articleRepo.findByIdNotAndCategory_Id(articleOptional.get().getId(),
+                    articleOptional.get().getCategory().getId(), pageable);
+        }
+        return Page.empty();
+
+    }
+
 }

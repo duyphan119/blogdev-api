@@ -20,4 +20,6 @@ public interface IArticleService {
     Optional<Article> update(Article article);
 
     Optional<Article> findById(Long id);
+
+    Page<Article> paginateRecommendArticleList(String articleSlug);
 }
