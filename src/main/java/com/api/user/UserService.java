@@ -84,4 +84,13 @@ public class UserService implements IUserService {
                 .build();
     }
 
+    @Override
+    public Optional<Author> getAuthor(Long id) {
+        Optional<User> userOptional = this.userRepo.findById(id);
+        if (userOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(this.convertUserToAuthor(userOptional.get()));
+    }
+
 }

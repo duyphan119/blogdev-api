@@ -14,4 +14,6 @@ public interface IUserService {
     Author convertUserToAuthor(User user);
 
     User convertAuthorToUser(Author author);
+
+    Optional<Author> getAuthor(Long id);
 }

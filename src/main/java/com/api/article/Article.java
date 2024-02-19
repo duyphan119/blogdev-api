@@ -56,7 +56,6 @@ public class Article {
     private String slug;
 
     @Column(columnDefinition = "TEXT")
-    @JsonIgnore
     private String content;
 
     @Column(name = "image_url")
@@ -66,6 +65,11 @@ public class Article {
     @Column
     @Builder.Default
     private Long views = Long.valueOf(0);
+
+    @Column(name = "is_public", nullable = true)
+    @JsonProperty("is_public")
+    @Builder.Default
+    private Boolean isPublic = false;
 
     @ManyToOne
     @JoinColumn(name = "author_id")

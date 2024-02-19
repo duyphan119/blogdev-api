@@ -23,7 +23,7 @@ public class ArticleService implements IArticleService {
     public Page<Article> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword) {
         Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
 
-        return articleRepo.findAll(pageable);
+        return articleRepo.findByTitleIgnoreCaseContaining(keyword, pageable);
     }
 
     @Override
@@ -64,6 +64,7 @@ public class ArticleService implements IArticleService {
                 .createdAt(article.getCreatedAt())
                 .isLongreads(article.getIsLongreads())
                 .views(article.getViews())
+                .isPublic(article.getIsPublic())
                 .build();
     }
 
@@ -96,6 +97,7 @@ public class ArticleService implements IArticleService {
                 .isLongreads(article.getIsLongreads())
                 .content(article.getContent())
                 .views(article.getViews())
+                .isPublic(article.getIsPublic())
                 .build();
     }
 
@@ -123,11 +125,28 @@ public class ArticleService implements IArticleService {
         Optional<Article> articleOptional = this.articleRepo.findBySlug(articleSlug);
         Pageable pageable = helper.generatePageable(8, 1, "createdAt", "desc");
         if (articleOptional.isPresent()) {
-            return this.articleRepo.findByIdNotAndCategory_Id(articleOptional.get().getId(),
+            return this.articleRepo.findByIsPublicAndIdNotAndCategory_Id(true, articleOptional.get().getId(),
                     articleOptional.get().getCategory().getId(), pageable);
         }
         return Page.empty();
 
+    }
+
+    @Override
+    public Page<Article> paginateAuthorArticleList(Long userId, Integer limit, Integer page, String sortBy,
+            String sortType, String keyword) {
+        return this.articleRepo.findByTitleIgnoreCaseContainingAndAuthor_Id(keyword, userId,
+                helper.generatePageable(limit, page, sortBy, sortType));
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        try {
+            this.articleRepo.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

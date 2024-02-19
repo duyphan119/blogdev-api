@@ -1,8 +1,10 @@
 package com.api.category;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
 public interface ICategoryService {
     Optional<Category> create(Category category);
@@ -16,4 +18,6 @@ public interface ICategoryService {
     boolean delete(Long id);
 
     String generateSlug(String name);
+
+    List<Category> findAll(Sort sort);
 }

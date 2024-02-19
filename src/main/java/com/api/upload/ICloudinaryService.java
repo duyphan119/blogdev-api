@@ -4,4 +4,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ICloudinaryService {
     public String uploadImageSingle(MultipartFile file);
+
+    public boolean deleteImage(String url);
 }

@@ -47,9 +47,12 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(GET, "/category",
-                                                                "/category/*",
+                                                                "/category/*", "/category-parent",
+                                                                "/category-parent/*",
                                                                 "/article",
-                                                                "/article/*", "/article/slug/*", "/auth/profile",
+                                                                "/article/slug/*",
+                                                                "/article/id/*",
+                                                                "/article/author/*",
                                                                 "/web/**", "/article-comment", "/article-reply-comment",
                                                                 "/article/recommend/slug/*")
                                                 .permitAll()
@@ -62,21 +65,27 @@ public class SecurityConfig {
                                                 // Role Admin
                                                 .requestMatchers(GET, "/subscriber", "/role", "/contact")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
-                                                .requestMatchers(POST, "/category", "/article")
+                                                .requestMatchers(POST, "/category", "/category-parent", "/article")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
-                                                .requestMatchers(PATCH, "/category/*", "/article/*")
+                                                .requestMatchers(PATCH, "/category/*", "/category-parent/*",
+                                                                "/article/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
-                                                .requestMatchers(DELETE, "/category/*", "/article/*", "/subscriber/*",
+                                                .requestMatchers(DELETE, "/category/*", "/category-parent/*",
+                                                                "/article/*", "/subscriber/*",
                                                                 "/contact/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 // Role Admin && user
-                                                .requestMatchers(POST, "/article-comment", "/article-reply-comment")
+                                                .requestMatchers(GET, "/auth/profile", "/article/author")
+                                                .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
+                                                .requestMatchers(POST, "/article-comment", "/article-reply-comment",
+                                                                "/article/author")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(PATCH, "/article-comment/*",
-                                                                "/article-reply-comment/*", "/auth/profile")
+                                                                "/article-reply-comment/*", "/auth/profile",
+                                                                "/article/author/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(DELETE, "/article-comment/*",
-                                                                "/article-reply-comment/*")
+                                                                "/article-reply-comment/*", "/article/author/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .anyRequest()
                                                 .authenticated()

@@ -1,4 +1,4 @@
-package com.api.category;
+package com.api.category_parent;
 
 import java.util.Date;
 import java.util.Set;
@@ -9,8 +9,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.api.article.Article;
-import com.api.category_parent.CategoryParent;
+import com.api.category.Category;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,10 +18,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -37,9 +33,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "category")
+@Table(name = "category_parent")
 @EntityListeners(AuditingEntityListener.class)
-public class Category {
+public class CategoryParent {
     @Id
     @GeneratedValue
     private Long id;
@@ -77,11 +73,7 @@ public class Category {
     @JsonIgnore
     private Long lastModifiedBy;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
     @JsonIgnore
-    private Set<Article> articles;
-
-    @ManyToOne
-    @JoinColumn(name = "category_parent_id")
-    private CategoryParent parent;
+    private Set<Category> categories;
 }

@@ -24,6 +24,7 @@ public class AuthenticationService implements IAuthenticationService {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             return Optional.of(userDetails);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return Optional.empty();
         }
     }

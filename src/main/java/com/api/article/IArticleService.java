@@ -22,4 +22,9 @@ public interface IArticleService {
     Optional<Article> findById(Long id);
 
     Page<Article> paginateRecommendArticleList(String articleSlug);
+
+    Page<Article> paginateAuthorArticleList(Long userId, Integer limit, Integer page, String sortBy, String sortType,
+            String keyword);
+
+    boolean delete(Long id);
 }

@@ -47,4 +47,6 @@ public class ArticleDetailResponse {
     @JsonProperty("comment_count")
     private Integer commentCount;
 
+    @JsonProperty("is_public")
+    private Boolean isPublic;
 }

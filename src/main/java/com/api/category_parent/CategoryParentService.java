@@ -1,4 +1,4 @@
-package com.api.category;
+package com.api.category_parent;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,40 +12,40 @@ import org.springframework.stereotype.Service;
 import com.api.utils.Helper;
 
 @Service
-public class CategoryService implements ICategoryService {
+public class CategoryParentService implements ICategoryParentService {
 
     @Autowired
-    private CategoryRepository categoryRepo;
+    private CategoryParentRepository categoryParentRepo;
 
     @Autowired
     private Helper helper;
 
     @Override
-    public Optional<Category> create(Category category) {
+    public Optional<CategoryParent> create(CategoryParent categoryParent) {
         try {
 
-            return Optional.of(this.categoryRepo.save(category));
+            return Optional.of(this.categoryParentRepo.save(categoryParent));
         } catch (Exception e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public Page<Category> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword) {
+    public Page<CategoryParent> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword) {
         Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
 
-        return this.categoryRepo.findAll(pageable);
+        return this.categoryParentRepo.findAll(pageable);
     }
 
     @Override
-    public Optional<Category> findById(Long id) {
-        return this.categoryRepo.findById(id);
+    public Optional<CategoryParent> findById(Long id) {
+        return this.categoryParentRepo.findById(id);
     }
 
     @Override
-    public Optional<Category> update(Category category) {
+    public Optional<CategoryParent> update(CategoryParent categoryParent) {
         try {
-            return Optional.of(this.categoryRepo.save(category));
+            return Optional.of(this.categoryParentRepo.save(categoryParent));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -54,7 +54,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public boolean delete(Long id) {
         try {
-            this.categoryRepo.deleteById(id);
+            this.categoryParentRepo.deleteById(id);
             return true;
         } catch (Exception e) {
             return false;
@@ -67,8 +67,8 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public List<Category> findAll(Sort sort) {
-        return this.categoryRepo.findAll(sort);
+    public List<CategoryParent> findAll(Sort sort) {
+        return this.categoryParentRepo.findAll(sort);
     }
 
 }
