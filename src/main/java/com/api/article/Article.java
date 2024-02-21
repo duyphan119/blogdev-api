@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.api.article_comment.ArticleComment;
+import com.api.article_tag.ArticleTag;
 import com.api.category.Category;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,9 +21,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -112,4 +114,9 @@ public class Article {
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<ArticleComment> comments;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "article_articletag", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "article_tag_id"))
+    @JsonIgnore
+    private Set<ArticleTag> tags;
 }

@@ -23,7 +23,7 @@ public class RoleController {
     @Autowired
     private AuthenticationService authenticationService;
 
-    @GetMapping()
+    @GetMapping("/user")
     public ResponseEntity<Object> getRoleList() {
         Optional<CustomUserDetails> userDetailsOptional = this.authenticationService.getUserDetails();
 

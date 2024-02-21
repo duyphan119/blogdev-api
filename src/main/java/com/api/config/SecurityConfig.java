@@ -75,7 +75,7 @@ public class SecurityConfig {
                                                                 "/contact/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 // Role Admin && user
-                                                .requestMatchers(GET, "/auth/profile", "/article/author")
+                                                .requestMatchers(GET, "/auth/profile", "/article/author", "/role/user")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(POST, "/article-comment", "/article-reply-comment",
                                                                 "/article/author")
