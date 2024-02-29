@@ -72,7 +72,7 @@ public class ArticleCommentController {
                                 Article article = articleCommentOptional.get().getArticle();
 
                                 article.setCommentCount(article.getCommentCount() - 1);
-                                this.articleService.update(article);
+                                this.articleService.update(article.getId(), article);
                                 return ResponseEntity.status(ApiConstant.STATUS_201)
                                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                                 .data(articleCommentOptional.get())
@@ -102,7 +102,7 @@ public class ArticleCommentController {
                                 System.out.println(body.getId());
                                 System.out.println(body.getUser().getId());
 
-                                articleCommentOptional = this.articleCommentService.update(body);
+                                articleCommentOptional = this.articleCommentService.update(id, body);
                                 if (articleCommentOptional.isPresent()) {
                                         return ResponseEntity.status(ApiConstant.STATUS_201)
                                                         .body(ApiResponse.builder()
@@ -145,7 +145,7 @@ public class ArticleCommentController {
                                                 Article article = articleCommentOptional.get().getArticle();
 
                                                 article.setCommentCount(article.getCommentCount() - 1);
-                                                this.articleService.update(article);
+                                                this.articleService.update(article.getId(), article);
                                                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                                                 .body(ApiResponse.builder()
                                                                                 .message(ApiConstant.MSG_SUCCESS)

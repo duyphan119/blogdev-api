@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.article.Article;
+import com.api.article.ArticleService;
 import com.api.auth.AuthenticationService;
 import com.api.role.Role;
 import com.api.user.CustomUserDetails;
@@ -32,6 +34,9 @@ public class ArticleTagController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private ArticleService articleService;
+
     @GetMapping()
     public ResponseEntity<Object> paginate(@RequestParam(name = "limit", defaultValue = "10") String limit,
             @RequestParam(name = "p", defaultValue = "1") String page,
@@ -45,6 +50,36 @@ public class ArticleTagController {
                 .data(PaginatedData.<ArticleTag>builder().rows(articleTagPage.getContent())
                         .count(articleTagPage.getTotalElements()).totalPages(articleTagPage.getTotalPages()).build())
                 .build());
+    }
+
+    @PostMapping("/article/{articleId}")
+    public ResponseEntity<Object> createArticleTagByArticleId(@RequestBody ArticleTag body,
+            @PathVariable("articleId") Long articleId) {
+        Optional<Article> articleOptional = this.articleService.findById(articleId);
+        if (articleOptional.isPresent()) {
+            if (body.getSlug() == null) {
+                body.setSlug(this.articleTagService.generateSlug(body.getName()));
+            }
+            Optional<ArticleTag> articleTagOptional = this.articleTagService.create(body);
+            if (articleTagOptional.isPresent()) {
+                Set<ArticleTag> articleTags = articleOptional.get().getTags();
+
+                articleTags.add(articleTagOptional.get());
+
+                articleOptional.get().setTags(articleTags);
+
+                this.articleService.update(articleId, articleOptional.get());
+
+                return ResponseEntity.status(ApiConstant.STATUS_201)
+                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                .data(articleTagOptional.get())
+                                .build());
+            }
+        }
+        return ResponseEntity.status(ApiConstant.STATUS_500)
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                        .data("Something went wrong")
+                        .build());
     }
 
     @PostMapping()

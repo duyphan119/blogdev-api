@@ -94,6 +94,21 @@ public class CategoryController {
                                                 .build());
         }
 
+        @GetMapping("/slug/{slug}")
+        public ResponseEntity<Object> findCategoryBySlug(@PathVariable("slug") String slug) {
+                Optional<Category> categoryOptional = this.categoryService.findBySlug(slug);
+                if (categoryOptional.isPresent()) {
+                        return ResponseEntity.status(ApiConstant.STATUS_200)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                        .data(categoryOptional.get())
+                                                        .build());
+                }
+                return ResponseEntity.status(ApiConstant.STATUS_500)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                .data("Something went wrong")
+                                                .build());
+        }
+
         @PatchMapping("/{id}")
         public ResponseEntity<Object> updateCategory(@PathVariable("id") Long id, @RequestBody Category body) {
                 Optional<Category> categoryOptional = this.categoryService.findById(id);
@@ -105,7 +120,7 @@ public class CategoryController {
                                         body.setSlug(categoryService.generateSlug(body.getName()));
                                 }
                         }
-                        categoryOptional = categoryService.create(body);
+                        categoryOptional = categoryService.update(id, body);
                         if (categoryOptional.isPresent()) {
                                 return ResponseEntity.status(ApiConstant.STATUS_201)
                                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)

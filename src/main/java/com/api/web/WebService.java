@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import com.api.article.Article;
 import com.api.article.ArticleRepository;
-import com.api.article.ArticleResponse;
 import com.api.article.ArticleService;
 import com.api.article_comment.ArticleComment;
 import com.api.article_comment.ArticleCommentService;
@@ -45,13 +44,13 @@ public class WebService implements IWebService {
         List<Long> ids = new ArrayList<>();
         ids.add(Long.valueOf(-1));
 
-        List<ArticleResponse> totalArticles = getTodayArticles(ids);
-        List<ArticleResponse> mostRecentArticles = getMostRecentArticles(ids);
-        List<ArticleResponse> longreadsArticles = getLongreadsArticles(ids);
+        List<Article> totalArticles = getTodayArticles(ids);
+        List<Article> mostRecentArticles = getMostRecentArticles(ids);
+        List<Article> longreadsArticles = getLongreadsArticles(ids);
         List<CategoryArticleResponse> categoryArticles = getCategoryArticles(ids);
-        List<ArticleResponse> mostViewsArticles = getMostViewsArticles(ids);
-        List<ArticleResponse> mostCommentsArticles = getMostCommentsArticles(ids);
-        List<ArticleResponse> trendingArticles = getTrendingArticles(ids);
+        List<Article> mostViewsArticles = getMostViewsArticles(ids);
+        List<Article> mostCommentsArticles = getMostCommentsArticles(ids);
+        List<Article> trendingArticles = getTrendingArticles(ids);
 
         return HomePageResponse.builder()
                 .totalArticles(totalArticles)
@@ -70,26 +69,7 @@ public class WebService implements IWebService {
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleResponse> convertArticleResponesList(List<Article> articles) {
-        return articles.stream()
-                .map(article -> {
-                    return ArticleResponse.builder()
-                            .authorFullName(article.getAuthor().getFullName())
-                            .authorId(article.getAuthor().getId())
-                            .categoryName(article.getCategory().getName())
-                            .categorySlug(article.getCategory().getSlug())
-                            .id(article.getId())
-                            .title(article.getTitle())
-                            .slug(article.getSlug())
-                            .imageUrl(article.getImageUrl())
-                            .introductionText(article.getIntroductionText())
-                            .createdAt(article.getCreatedAt())
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    public List<ArticleResponse> getTodayArticles(List<Long> ids) {
+    public List<Article> getTodayArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(3, 1, "id", "desc");
 
@@ -109,32 +89,32 @@ public class WebService implements IWebService {
             List<Article> newList = new ArrayList<>();
             newList.addAll(articlePage.getContent());
             newList.addAll(articlePage2.getContent());
-            return this.convertArticleResponesList(newList);
+            return newList;
         }
 
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
-    public List<ArticleResponse> getMostRecentArticles(List<Long> ids) {
+    public List<Article> getMostRecentArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(5, 1, "id", "desc");
 
         Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
-    public List<ArticleResponse> getLongreadsArticles(List<Long> ids) {
+    public List<Article> getLongreadsArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(5, 1, "id", "desc");
 
         Page<Article> articlePage = this.articleRepo.findByIsLongreadsAndIdNotIn(true, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
     public List<CategoryArticleResponse> getCategoryArticles(List<Long> ids) {
-        Pageable pageable = helper.generatePageable(6, 1, "name", "desc");
+        Pageable pageable = helper.generatePageable(4, 1, "name", "desc");
         Pageable pageable2 = helper.generatePageable(3, 1, "id", "desc");
 
         Page<Category> categoryPage = this.categoryRepo.findAll(pageable);
@@ -158,32 +138,32 @@ public class WebService implements IWebService {
         return categoryArticles;
     }
 
-    public List<ArticleResponse> getMostViewsArticles(List<Long> ids) {
+    public List<Article> getMostViewsArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(5, 1, "views", "desc");
 
         Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
-    public List<ArticleResponse> getMostCommentsArticles(List<Long> ids) {
+    public List<Article> getMostCommentsArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(5, 1, "commentCount", "desc");
 
         Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
-    public List<ArticleResponse> getTrendingArticles(List<Long> ids) {
+    public List<Article> getTrendingArticles(List<Long> ids) {
 
         Pageable pageable = helper.generatePageable(10, 1, "id", "desc");
 
         Page<Article> articlePage = this.articleRepo.findByViewsGreaterThanAndCommentCountGreaterThanAndIdNotIn(1001,
                 10, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        return this.convertArticleResponesList(articlePage.getContent());
+        return articlePage.getContent();
     }
 
     @Override
@@ -200,15 +180,13 @@ public class WebService implements IWebService {
                             articleDetailPageResponse.getArticle().getCategory().getId(), pageable)
                     .getContent();
             articleDetailPageResponse
-                    .setRecommendArticles(recommendArticles.stream().map(article -> {
-                        return this.articleService.convertToArticleResponse(article);
-                    }).toList());
+                    .setRecommendArticles(recommendArticles);
             ids.add(articleDetailPageResponse.getArticle().getId());
             ids.addAll(this.getIds(recommendArticles));
-            List<ArticleResponse> mostRecentArticles = getMostRecentArticles(ids);
-            List<ArticleResponse> mostViewsArticles = getMostViewsArticles(ids);
-            List<ArticleResponse> mostCommentsArticles = getMostCommentsArticles(ids);
-            List<ArticleResponse> trendingArticles = getTrendingArticles(ids);
+            List<Article> mostRecentArticles = getMostRecentArticles(ids);
+            List<Article> mostViewsArticles = getMostViewsArticles(ids);
+            List<Article> mostCommentsArticles = getMostCommentsArticles(ids);
+            List<Article> trendingArticles = getTrendingArticles(ids);
             articleDetailPageResponse.setMostRecentArticles(mostRecentArticles);
             articleDetailPageResponse.setMostViewsArticles(mostViewsArticles);
             articleDetailPageResponse.setMostCommentsArticles(mostCommentsArticles);
@@ -235,10 +213,10 @@ public class WebService implements IWebService {
             }
         }
 
-        List<ArticleResponse> mostRecentArticles = getMostRecentArticles(ids);
-        List<ArticleResponse> mostViewsArticles = getMostViewsArticles(ids);
-        List<ArticleResponse> mostCommentsArticles = getMostCommentsArticles(ids);
-        List<ArticleResponse> trendingArticles = getTrendingArticles(ids);
+        List<Article> mostRecentArticles = getMostRecentArticles(ids);
+        List<Article> mostViewsArticles = getMostViewsArticles(ids);
+        List<Article> mostCommentsArticles = getMostCommentsArticles(ids);
+        List<Article> trendingArticles = getTrendingArticles(ids);
 
         return ArticleListResponse.builder().mostCommentsArticles(mostCommentsArticles)
                 .mostRecentArticles(mostRecentArticles).mostViewsArticles(mostViewsArticles)

@@ -50,25 +50,6 @@ public class ArticleService implements IArticleService {
     }
 
     @Override
-    public ArticleResponse convertToArticleResponse(Article article) {
-        return ArticleResponse.builder()
-                .authorFullName(article.getAuthor().getFullName())
-                .authorId(article.getAuthor().getId())
-                .categoryName(article.getCategory().getName())
-                .categorySlug(article.getCategory().getSlug())
-                .id(article.getId())
-                .title(article.getTitle())
-                .slug(article.getSlug())
-                .imageUrl(article.getImageUrl())
-                .introductionText(article.getIntroductionText())
-                .createdAt(article.getCreatedAt())
-                .isLongreads(article.getIsLongreads())
-                .views(article.getViews())
-                .isPublic(article.getIsPublic())
-                .build();
-    }
-
-    @Override
     public ArticleDetailResponse convertToArticleDetailResponse(Article article) {
         return ArticleDetailResponse.builder()
                 .author(Author.builder()
@@ -98,6 +79,7 @@ public class ArticleService implements IArticleService {
                 .content(article.getContent())
                 .views(article.getViews())
                 .isPublic(article.getIsPublic())
+                .tags(article.getTags())
                 .build();
     }
 
@@ -107,12 +89,16 @@ public class ArticleService implements IArticleService {
     }
 
     @Override
-    public Optional<Article> update(Article article) {
+    public Optional<Article> update(Long id, Article body) {
         try {
-            return this.articleRepo.findById(articleRepo.save(article).getId());
+            Optional<Article> articleOptional = this.articleRepo.findById(id);
+            if (articleOptional.isPresent()) {
+                body.setId(id);
+                return Optional.of(this.articleRepo.save(body));
+            }
         } catch (Exception e) {
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     @Override
@@ -147,6 +133,14 @@ public class ArticleService implements IArticleService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public Page<Article> paginateByCategorySlug(Integer limit, Integer page, String sortBy, String sortType,
+            String categorySlug) {
+        Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
+
+        return articleRepo.findByIsPublicAndCategory_Slug(true, categorySlug, pageable);
     }
 
 }

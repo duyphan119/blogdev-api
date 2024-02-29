@@ -35,7 +35,7 @@ public class ArticleCommentService implements IArticleCommentService {
                 if (articleOptional.isPresent()) {
                     Article article = articleOptional.get();
                     article.setCommentCount(article.getCommentCount() + 1);
-                    this.articleService.update(article);
+                    this.articleService.update(article.getId(), article);
                     articleCommentOptional.get().setArticle(article);
                 }
             }
@@ -78,26 +78,31 @@ public class ArticleCommentService implements IArticleCommentService {
     }
 
     @Override
-    public Optional<ArticleComment> update(ArticleComment articleComment) {
+    public Optional<ArticleComment> update(Long id, ArticleComment body) {
 
         try {
-            Optional<ArticleComment> articleCommentOptional = Optional.of(this.articleCommentRepo.save(articleComment));
-
+            Optional<ArticleComment> articleCommentOptional = this.articleCommentRepo.findById(id);
             if (articleCommentOptional.isPresent()) {
-                Optional<Article> articleOptional = this.articleService.findById(articleComment.getArticle().getId());
+                body.setId(id);
+                articleCommentOptional = Optional.of(this.articleCommentRepo.save(body));
 
-                if (articleOptional.isPresent()) {
-                    Article article = articleOptional.get();
-                    article.setCommentCount(article.getCommentCount() + 1);
-                    this.articleService.update(article);
-                    articleCommentOptional.get().setArticle(article);
+                if (articleCommentOptional.isPresent()) {
+                    Optional<Article> articleOptional = this.articleService.findById(body.getArticle().getId());
+
+                    if (articleOptional.isPresent()) {
+                        Article article = articleOptional.get();
+                        article.setCommentCount(article.getCommentCount() + 1);
+                        this.articleService.update(article.getId(), article);
+                        articleCommentOptional.get().setArticle(article);
+                    }
                 }
+
+                return articleCommentOptional;
             }
 
-            return articleCommentOptional;
         } catch (Exception e) {
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.api.web;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.api.article.ArticleResponse;
+import com.api.article.Article;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -20,21 +20,21 @@ import lombok.Setter;
 public class ArticleListResponse {
     @JsonProperty("recommend_articles")
     @Builder.Default
-    private List<ArticleResponse> recommendArticles = new ArrayList<>();
+    private List<Article> recommendArticles = new ArrayList<>();
 
     @JsonProperty("most_recent_articles")
     @Builder.Default
-    private List<ArticleResponse> mostRecentArticles = new ArrayList<>();
+    private List<Article> mostRecentArticles = new ArrayList<>();
 
     @JsonProperty("most_views_articles")
     @Builder.Default
-    private List<ArticleResponse> mostViewsArticles = new ArrayList<>();
+    private List<Article> mostViewsArticles = new ArrayList<>();
 
     @JsonProperty("most_comments_articles")
     @Builder.Default
-    private List<ArticleResponse> mostCommentsArticles = new ArrayList<>();
+    private List<Article> mostCommentsArticles = new ArrayList<>();
 
     @JsonProperty("trending_articles")
     @Builder.Default
-    private List<ArticleResponse> trendingArticles = new ArrayList<>();
+    private List<Article> trendingArticles = new ArrayList<>();
 }

@@ -19,7 +19,7 @@ import lombok.Setter;
 public class AuthorArticlesResponse {
     private Author author;
 
-    private List<ArticleResponse> rows;
+    private List<Article> rows;
 
     @JsonProperty("total_pages")
     private Integer totalPages;

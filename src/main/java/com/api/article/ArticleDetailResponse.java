@@ -1,7 +1,9 @@
 package com.api.article;
 
 import java.util.Date;
+import java.util.Set;
 
+import com.api.article_tag.ArticleTag;
 import com.api.category.Category;
 import com.api.user.Author;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -49,4 +51,6 @@ public class ArticleDetailResponse {
 
     @JsonProperty("is_public")
     private Boolean isPublic;
+
+    private Set<ArticleTag> tags;
 }

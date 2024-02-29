@@ -77,7 +77,8 @@ public class ArticleReplyCommentController {
                                 articleCommentOptional.get()
                                                 .setReplyCount(articleCommentOptional.get().getReplyCount() + 1);
                                 Optional<ArticleComment> newArticleCommentOptional = this.articleCommentService
-                                                .update(articleCommentOptional.get());
+                                                .update(articleCommentOptional.get().getId(),
+                                                                articleCommentOptional.get());
                                 body.setArticleComment(articleCommentOptional.get());
                                 if (newArticleCommentOptional.isPresent()) {
 
@@ -172,7 +173,8 @@ public class ArticleReplyCommentController {
                                                 ArticleComment articleComment = articleReplyCommentOptional.get()
                                                                 .getArticleComment();
                                                 articleComment.setReplyCount(articleComment.getReplyCount() - 1);
-                                                this.articleCommentService.update(articleComment);
+                                                this.articleCommentService.update(articleComment.getId(),
+                                                                articleComment);
                                                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                                                 .body(ApiResponse.builder()
                                                                                 .message(ApiConstant.MSG_SUCCESS)

@@ -4,27 +4,22 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 
-public interface IArticleService {
-    Page<Article> paginate(Integer limit, Integer page, String sortBy, String sortType, String keyword);
+import com.api.utils.ICrudService;
 
-    Optional<Article> create(Article article);
+public interface IArticleService extends ICrudService<Article, Long> {
+        Page<Article> paginateByCategorySlug(Integer limit, Integer page, String sortBy, String sortType,
+                        String categorySlug);
 
-    String generateSlug(String name);
+        String generateSlug(String name);
 
-    ArticleResponse convertToArticleResponse(Article article);
+        ArticleDetailResponse convertToArticleDetailResponse(Article article);
 
-    ArticleDetailResponse convertToArticleDetailResponse(Article article);
+        Optional<Article> findBySlug(String slug);
 
-    Optional<Article> findBySlug(String slug);
+        Page<Article> paginateRecommendArticleList(String articleSlug);
 
-    Optional<Article> update(Article article);
+        Page<Article> paginateAuthorArticleList(Long userId, Integer limit, Integer page, String sortBy,
+                        String sortType,
+                        String keyword);
 
-    Optional<Article> findById(Long id);
-
-    Page<Article> paginateRecommendArticleList(String articleSlug);
-
-    Page<Article> paginateAuthorArticleList(Long userId, Integer limit, Integer page, String sortBy, String sortType,
-            String keyword);
-
-    boolean delete(Long id);
 }

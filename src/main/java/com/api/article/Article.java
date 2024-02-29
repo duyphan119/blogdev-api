@@ -1,6 +1,7 @@
 package com.api.article;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -74,7 +75,7 @@ public class Article {
     private Boolean isPublic = false;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author.id")
     private User author;
 
     @Column(nullable = true)
@@ -117,6 +118,6 @@ public class Article {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "article_articletag", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "article_tag_id"))
-    @JsonIgnore
-    private Set<ArticleTag> tags;
+    @Builder.Default
+    private Set<ArticleTag> tags = new LinkedHashSet<>();
 }

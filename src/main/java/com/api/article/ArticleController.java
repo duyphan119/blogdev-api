@@ -1,7 +1,6 @@
 package com.api.article;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,17 +46,24 @@ public class ArticleController {
                         @RequestParam(name = "p", defaultValue = "1") String page,
                         @RequestParam(name = "sort_by", defaultValue = "createdAt") String sortBy,
                         @RequestParam(name = "sort_type", defaultValue = "desc") String sortType,
-                        @RequestParam(name = "q", defaultValue = "") String keyword) {
-                Page<Article> articlePage = articleService.paginate(Integer.parseInt(limit), Integer.parseInt(page),
-                                sortBy,
-                                sortType, keyword);
+                        @RequestParam(name = "q", defaultValue = "") String keyword,
+                        @RequestParam(name = "cat", defaultValue = "") String categorySlug) {
+                Page<Article> articlePage = Page.empty();
+                if (!categorySlug.equals("")) {
+                        articlePage = articleService.paginateByCategorySlug(Integer.parseInt(limit),
+                                        Integer.parseInt(page),
+                                        sortBy,
+                                        sortType, categorySlug);
+                } else {
+
+                        articlePage = articleService.paginate(Integer.parseInt(limit), Integer.parseInt(page),
+                                        sortBy,
+                                        sortType, keyword);
+                }
                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
-                                                .data(PaginatedData.<ArticleResponse>builder()
-                                                                .rows(articlePage.getContent().stream().map(article -> {
-                                                                        return articleService.convertToArticleResponse(
-                                                                                        article);
-                                                                }).collect(Collectors.toList()))
+                                                .data(PaginatedData.<Article>builder()
+                                                                .rows(articlePage.getContent())
                                                                 .totalPages(articlePage.getTotalPages())
                                                                 .count(articlePage.getTotalElements())
                                                                 .build())
@@ -78,12 +84,7 @@ public class ArticleController {
                                 sortBy,
                                 sortType, keyword);
                 AuthorArticlesResponse authorArticlesResponse = AuthorArticlesResponse.builder()
-                                .rows(articlePage.getContent().stream()
-                                                .map(article -> {
-                                                        return articleService
-                                                                        .convertToArticleResponse(
-                                                                                        article);
-                                                }).collect(Collectors.toList()))
+                                .rows(articlePage.getContent())
                                 .totalPages(articlePage.getTotalPages())
                                 .count(articlePage.getTotalElements())
                                 .build();
@@ -115,13 +116,8 @@ public class ArticleController {
                                         sortType, keyword);
                         return ResponseEntity.status(ApiConstant.STATUS_200)
                                         .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
-                                                        .data(PaginatedData.<ArticleResponse>builder()
-                                                                        .rows(articlePage.getContent().stream()
-                                                                                        .map(article -> {
-                                                                                                return articleService
-                                                                                                                .convertToArticleResponse(
-                                                                                                                                article);
-                                                                                        }).collect(Collectors.toList()))
+                                                        .data(PaginatedData.<Article>builder()
+                                                                        .rows(articlePage.getContent())
                                                                         .totalPages(articlePage.getTotalPages())
                                                                         .count(articlePage.getTotalElements())
                                                                         .build())
@@ -139,11 +135,8 @@ public class ArticleController {
                 Page<Article> articlePage = this.articleService.paginateRecommendArticleList(slug);
                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
-                                                .data(PaginatedData.<ArticleResponse>builder()
-                                                                .rows(articlePage.getContent().stream().map(article -> {
-                                                                        return articleService.convertToArticleResponse(
-                                                                                        article);
-                                                                }).collect(Collectors.toList()))
+                                                .data(PaginatedData.<Article>builder()
+                                                                .rows(articlePage.getContent())
                                                                 .totalPages(articlePage.getTotalPages())
                                                                 .count(articlePage.getTotalElements())
                                                                 .build())
@@ -232,6 +225,7 @@ public class ArticleController {
 
         @PatchMapping("/author/{id}")
         public ResponseEntity<Object> updateAuthorArticle(@PathVariable("id") Long id, @RequestBody Article body) {
+                System.out.println("id" + id);
                 Optional<Article> articleOptional = this.articleService.findById(id);
                 CustomUserDetails userDetails = authenticationService.getUserDetails().get();
 
@@ -255,7 +249,7 @@ public class ArticleController {
                                                         .build());
                 }
                 body.setAuthor(userDetails.getUser());
-                articleOptional = articleService.update(body);
+                articleOptional = articleService.update(id, body);
                 if (articleOptional.isPresent()) {
                         return ResponseEntity.status(ApiConstant.STATUS_200)
                                         .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)

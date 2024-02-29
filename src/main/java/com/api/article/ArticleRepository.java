@@ -54,4 +54,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
         Page<Article> findByIsPublicAndAuthor_Id(Boolean isPublic, Long userId, Pageable pageable);
 
+        Page<Article> findByIsPublicAndCategory_Slug(Boolean isPublic, String categorySlug,
+                        Pageable pageable);
+
 }
