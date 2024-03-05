@@ -33,28 +33,44 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                         Long userId,
                         Pageable pageable);
 
-        Page<Article> findByIsPublicAndCreatedAtBetweenAndIdNotIn(Boolean isPublic, Date startOfDay, Date endOfDay,
+        Optional<Article> findByApprovedAndIsPublicAndSlug(Boolean approved, Boolean isPublic, String slug);
+
+        Page<Article> findByApprovedAndIsPublicAndCreatedAtBetweenAndIdNotIn(Boolean approved, Boolean isPublic,
+                        Date startOfDay, Date endOfDay,
                         List<Long> ids,
                         Pageable pageable);
 
-        Page<Article> findByIsPublicAndIdNotIn(Boolean isPublic, List<Long> ids, Pageable pageable);
-
-        Page<Article> findByIsPublicAndIsLongreadsAndIdNotIn(Boolean isPublic, Boolean isLongreads, List<Long> ids,
+        Page<Article> findByApprovedAndIsPublicAndIdNotIn(Boolean approved, Boolean isPublic, List<Long> ids,
                         Pageable pageable);
 
-        Page<Article> findByIsPublicAndIdNotInAndCategory_Id(Boolean isPublic, List<Long> ids, Long categoryId,
+        Page<Article> findByApprovedAndIsPublicAndIsLongreadsAndIdNotIn(Boolean approved, Boolean isPublic,
+                        Boolean isLongreads, List<Long> ids,
                         Pageable pageable);
 
-        Page<Article> findByIsPublicAndViewsGreaterThanAndCommentCountGreaterThanAndIdNotIn(Boolean isPublic,
+        Page<Article> findByApprovedAndIsPublicAndIdNotInAndCategory_Id(Boolean approved, Boolean isPublic,
+                        List<Long> ids, Long categoryId,
+                        Pageable pageable);
+
+        Page<Article> findByApprovedAndIsPublicAndViewsGreaterThanAndCommentCountGreaterThanAndIdNotIn(Boolean approved,
+                        Boolean isPublic,
                         Integer views, Integer commentCount,
                         List<Long> ids, Pageable pageable);
 
-        Page<Article> findByIsPublicAndIdNotAndCategory_Id(Boolean isPublic, Long id, Long categoryId,
+        Page<Article> findByApprovedAndIsPublicAndIdNotAndCategory_Id(Boolean approved, Boolean isPublic, Long id,
+                        Long categoryId,
                         Pageable pageable);
 
-        Page<Article> findByIsPublicAndAuthor_Id(Boolean isPublic, Long userId, Pageable pageable);
-
-        Page<Article> findByIsPublicAndCategory_Slug(Boolean isPublic, String categorySlug,
+        Page<Article> findByApprovedAndIsPublicAndAuthor_Id(Boolean approved, Boolean isPublic, Long userId,
                         Pageable pageable);
 
+        Page<Article> findByApprovedAndIsPublicAndCategory_Slug(Boolean approved, Boolean isPublic, String categorySlug,
+                        Pageable pageable);
+
+        List<Article> findByIdIn(List<Long> ids);
+
+        Page<Article> findByCategory_Slug(String categorySlug,
+                        Pageable pageable);
+
+        Page<Article> findByApprovedAndIsPublicAndTitleIgnoreCaseContaining(Boolean approved, Boolean isPublic,
+                        String keyword, Pageable pageable);
 }

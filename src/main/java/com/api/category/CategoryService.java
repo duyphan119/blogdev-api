@@ -84,4 +84,50 @@ public class CategoryService implements ICategoryService {
         return Optional.empty();
     }
 
+    @Override
+    public boolean deleteMultiple(List<Long> ids) {
+        try {
+            this.categoryRepo.deleteAllByIdInBatch(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public List<Category> findByIdIn(List<Long> ids) {
+        return this.categoryRepo.findByIdIn(ids);
+    }
+
+    @Override
+    public Page<Category> findCategoryList(CategoryParams params, boolean isAdmin) {
+        Integer pageSize = params.getPageSize();
+        Integer page = params.getPage();
+        String sortBy = params.getSortBy();
+        String sortType = params.getSortType();
+        String keyword = params.getKeyword();
+        String categoryParentSlug = params.getCategoryParentSlug();
+        Pageable pageable = Pageable.unpaged();
+
+        if (!pageSize.equals(-1)) {
+            pageable = helper.generatePageable(pageSize, page, sortBy, sortType);
+        }
+
+        if (!categoryParentSlug.isEmpty()) {
+            if (isAdmin) {
+                return this.categoryRepo.findByNameIgnoreCaseContainingAndParent_Slug(keyword, categoryParentSlug,
+                        pageable);
+            }
+
+            return this.categoryRepo.findByIsPublicAndNameIgnoreCaseContainingAndParent_Slug(true, keyword,
+                    categoryParentSlug, pageable);
+        }
+
+        if (isAdmin) {
+            return this.categoryRepo.findByNameIgnoreCaseContaining(keyword, pageable);
+        }
+
+        return this.categoryRepo.findByIsPublicAndNameIgnoreCaseContaining(true, keyword, pageable);
+    }
+
 }

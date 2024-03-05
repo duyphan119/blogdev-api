@@ -76,4 +76,9 @@ public class CategoryParent {
     @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<Category> categories;
+
+    @Column(name = "is_public", nullable = true)
+    @JsonProperty("is_public")
+    @Builder.Default
+    private Boolean isPublic = true;
 }

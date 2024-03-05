@@ -1,5 +1,6 @@
 package com.api.article_tag;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,22 @@ public class ArticleTagService implements IArticleTagService {
                 randomNumber = helper.generateRandomNumber(1000);
             }
         }
+    }
+
+    @Override
+    public boolean deleteMultiple(List<Long> ids) {
+        try {
+            this.articleTagRepo.deleteAllByIdInBatch(ids);
+            return true;
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    @Override
+    public List<ArticleTag> findByIdIn(List<Long> ids) {
+        return this.articleTagRepo.findByIdIn(ids);
     }
 
 }

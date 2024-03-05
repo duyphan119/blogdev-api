@@ -72,7 +72,11 @@ public class Article {
     @Column(name = "is_public", nullable = true)
     @JsonProperty("is_public")
     @Builder.Default
-    private Boolean isPublic = false;
+    private Boolean isPublic = true;
+
+    @Column(nullable = true)
+    @Builder.Default
+    private Boolean approved = false;
 
     @ManyToOne
     @JoinColumn(name = "author.id")

@@ -1,5 +1,7 @@
 package com.api.article;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,24 +44,48 @@ public class ArticleController {
 
         @GetMapping()
         public ResponseEntity<Object> getArticleList(
-                        @RequestParam(name = "limit", defaultValue = "10") String limit,
+                        @RequestParam(name = "limit", defaultValue = "-1") String limit,
                         @RequestParam(name = "p", defaultValue = "1") String page,
                         @RequestParam(name = "sort_by", defaultValue = "createdAt") String sortBy,
                         @RequestParam(name = "sort_type", defaultValue = "desc") String sortType,
                         @RequestParam(name = "q", defaultValue = "") String keyword,
                         @RequestParam(name = "cat", defaultValue = "") String categorySlug) {
-                Page<Article> articlePage = Page.empty();
-                if (!categorySlug.equals("")) {
-                        articlePage = articleService.paginateByCategorySlug(Integer.parseInt(limit),
-                                        Integer.parseInt(page),
-                                        sortBy,
-                                        sortType, categorySlug);
-                } else {
+                ArticleParams params = ArticleParams.builder()
+                                .page(Integer.parseInt(page))
+                                .pageSize(Integer.parseInt(limit))
+                                .sortBy(sortBy)
+                                .sortType(sortType)
+                                .keyword(keyword)
+                                .categorySlug(categorySlug)
+                                .build();
+                Page<Article> articlePage = this.articleService.findArticles(params, false);
+                return ResponseEntity.status(ApiConstant.STATUS_200)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                .data(PaginatedData.<Article>builder()
+                                                                .rows(articlePage.getContent())
+                                                                .totalPages(articlePage.getTotalPages())
+                                                                .count(articlePage.getTotalElements())
+                                                                .build())
+                                                .build());
+        }
 
-                        articlePage = articleService.paginate(Integer.parseInt(limit), Integer.parseInt(page),
-                                        sortBy,
-                                        sortType, keyword);
-                }
+        @GetMapping("/admin")
+        public ResponseEntity<Object> getArticleListAdmin(
+                        @RequestParam(name = "limit", defaultValue = "-1") String limit,
+                        @RequestParam(name = "p", defaultValue = "1") String page,
+                        @RequestParam(name = "sort_by", defaultValue = "createdAt") String sortBy,
+                        @RequestParam(name = "sort_type", defaultValue = "desc") String sortType,
+                        @RequestParam(name = "q", defaultValue = "") String keyword,
+                        @RequestParam(name = "cat", defaultValue = "") String categorySlug) {
+                ArticleParams params = ArticleParams.builder()
+                                .page(Integer.parseInt(page))
+                                .pageSize(Integer.parseInt(limit))
+                                .sortBy(sortBy)
+                                .sortType(sortType)
+                                .keyword(keyword)
+                                .categorySlug(categorySlug)
+                                .build();
+                Page<Article> articlePage = this.articleService.findArticles(params, authenticationService.isAdmin());
                 return ResponseEntity.status(ApiConstant.STATUS_200)
                                 .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                 .data(PaginatedData.<Article>builder()
@@ -186,6 +212,7 @@ public class ArticleController {
                 if (body.getSlug() == null) {
                         body.setSlug(articleService.generateSlug(body.getTitle()));
                 }
+                body.setApproved(true);
                 body.setIsPublic(true);
                 body.setAuthor(userDetails.get().getUser());
                 Optional<Article> articleOptional = articleService.create(body);
@@ -212,6 +239,45 @@ public class ArticleController {
                 Optional<Article> articleOptional = articleService.create(body);
                 if (articleOptional.isPresent()) {
                         return ResponseEntity.status(ApiConstant.STATUS_201)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                        .data(articleOptional.get())
+                                                        .build());
+                }
+
+                return ResponseEntity.status(ApiConstant.STATUS_500)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                .data("Something went wrong")
+                                                .build());
+        }
+
+        @PatchMapping("/{id}")
+        public ResponseEntity<Object> updateArticle(@PathVariable("id") Long id, @RequestBody Article body) {
+                Optional<Article> articleOptional = this.articleService.findById(id);
+                CustomUserDetails userDetails = authenticationService.getUserDetails().get();
+
+                if (articleOptional.isEmpty()) {
+                        return ResponseEntity.status(ApiConstant.STATUS_404)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                        .data("Not Found")
+                                                        .build());
+                }
+                body.setId(id);
+
+                if (body.getSlug().equals(articleOptional.get().getSlug())) {
+                        if (!body.getTitle().equals(articleOptional.get().getTitle()))
+                                body.setSlug(articleService.generateSlug(body.getTitle()));
+                }
+
+                if (!body.getAuthor().getId().equals(userDetails.getUser().getId())) {
+                        return ResponseEntity.status(ApiConstant.STATUS_401)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                        .data("Unauthorized")
+                                                        .build());
+                }
+                body.setAuthor(userDetails.getUser());
+                articleOptional = articleService.update(id, body);
+                if (articleOptional.isPresent()) {
+                        return ResponseEntity.status(ApiConstant.STATUS_200)
                                         .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                         .data(articleOptional.get())
                                                         .build());
@@ -285,6 +351,69 @@ public class ArticleController {
                 boolean isDeleted = this.articleService.delete(id);
                 if (isDeleted) {
                         cloudinaryService.deleteImage(articleOptional.get().getImageUrl());
+                        return ResponseEntity.status(ApiConstant.STATUS_200)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                        .data("Deleted")
+                                                        .build());
+                }
+
+                return ResponseEntity.status(ApiConstant.STATUS_500)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                .data("Something went wrong")
+                                                .build());
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Object> deleteArticle(@PathVariable("id") Long id) {
+                Optional<Article> articleOptional = this.articleService.findById(id);
+
+                if (articleOptional.isEmpty()) {
+                        return ResponseEntity.status(ApiConstant.STATUS_404)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                        .data("Not Found")
+                                                        .build());
+                }
+
+                boolean isDeleted = this.articleService.delete(id);
+                if (isDeleted) {
+                        cloudinaryService.deleteImage(articleOptional.get().getImageUrl());
+                        return ResponseEntity.status(ApiConstant.STATUS_200)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                                        .data("Deleted")
+                                                        .build());
+                }
+
+                return ResponseEntity.status(ApiConstant.STATUS_500)
+                                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                .data("Something went wrong")
+                                                .build());
+        }
+
+        @DeleteMapping()
+        public ResponseEntity<Object> deleteArticles(@RequestParam("ids") String idsStr) {
+
+                List<Long> ids = new ArrayList<>();
+
+                String[] idsStrSplitted = idsStr.split("_");
+
+                for (int i = 0; i < idsStrSplitted.length; i++) {
+                        ids.add(Long.valueOf(idsStrSplitted[i]));
+                }
+
+                List<Article> articleList = this.articleService.findByIdIn(ids);
+
+                if (articleList.size() < ids.size()) {
+                        return ResponseEntity.status(ApiConstant.STATUS_404)
+                                        .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                                                        .data("Not Found")
+                                                        .build());
+                }
+
+                boolean isDeleted = this.articleService.deleteMultiple(ids);
+                if (isDeleted) {
+                        for (int i = 0; i < articleList.size(); i++) {
+                                cloudinaryService.deleteImage(articleList.get(i).getImageUrl());
+                        }
                         return ResponseEntity.status(ApiConstant.STATUS_200)
                                         .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
                                                         .data("Deleted")

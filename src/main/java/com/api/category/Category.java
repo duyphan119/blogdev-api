@@ -84,4 +84,9 @@ public class Category {
     @ManyToOne
     @JoinColumn(name = "category_parent_id")
     private CategoryParent parent;
+
+    @Column(name = "is_public", nullable = true)
+    @JsonProperty("is_public")
+    @Builder.Default
+    private Boolean isPublic = true;
 }

@@ -1,5 +1,6 @@
 package com.api.article;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -7,8 +8,6 @@ import org.springframework.data.domain.Page;
 import com.api.utils.ICrudService;
 
 public interface IArticleService extends ICrudService<Article, Long> {
-        Page<Article> paginateByCategorySlug(Integer limit, Integer page, String sortBy, String sortType,
-                        String categorySlug);
 
         String generateSlug(String name);
 
@@ -21,5 +20,11 @@ public interface IArticleService extends ICrudService<Article, Long> {
         Page<Article> paginateAuthorArticleList(Long userId, Integer limit, Integer page, String sortBy,
                         String sortType,
                         String keyword);
+
+        List<Article> findByIdIn(List<Long> ids);
+
+        Page<Article> findArticles(ArticleParams params, boolean isAdmin);
+
+        boolean deleteMultiple(List<Long> ids);
 
 }

@@ -71,4 +71,33 @@ public class CategoryParentService implements ICategoryParentService {
         return this.categoryParentRepo.findAll(sort);
     }
 
+    @Override
+    public Page<CategoryParent> findCategoryParentList(CategoryParentParams params, boolean isAdmin) {
+        Integer pageSize = params.getPageSize();
+        Integer page = params.getPage();
+        String sortBy = params.getSortBy();
+        String sortType = params.getSortType();
+        String keyword = params.getKeyword();
+        Pageable pageable = Pageable.unpaged();
+
+        if (!pageSize.equals(-1)) {
+            pageable = helper.generatePageable(pageSize, page, sortBy, sortType);
+        }
+
+        if (isAdmin) {
+            return this.categoryParentRepo.findByNameIgnoreCaseContaining(keyword, pageable);
+        }
+
+        return this.categoryParentRepo.findByIsPublicAndNameIgnoreCaseContaining(true, keyword, pageable);
+    }
+
+    @Override
+    public boolean deleteMultiple(List<Long> ids) {
+        try {
+            this.categoryParentRepo.deleteAllByIdInBatch(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

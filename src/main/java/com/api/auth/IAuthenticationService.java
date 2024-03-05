@@ -6,9 +6,11 @@ import com.api.user.CustomUserDetails;
 import com.api.user.User;
 
 public interface IAuthenticationService {
-    public Optional<CustomUserDetails> getUserDetails();
+    Optional<CustomUserDetails> getUserDetails();
 
-    public AuthenticationResponse generateAuthenticationResponse(User user);
+    AuthenticationResponse generateAuthenticationResponse(User user);
 
-    public AuthenticationResponse generateAuthenticationResponse(String email);
+    AuthenticationResponse generateAuthenticationResponse(String email);
+
+    boolean isAdmin();
 }

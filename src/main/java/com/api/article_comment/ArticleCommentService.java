@@ -1,5 +1,6 @@
 package com.api.article_comment;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,5 +112,20 @@ public class ArticleCommentService implements IArticleCommentService {
         Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
 
         return this.articleCommentRepo.findByArticle_Slug(articleSlug, pageable);
+    }
+
+    @Override
+    public boolean deleteMultiple(List<Long> ids) {
+        try {
+            this.articleCommentRepo.deleteAllByIdInBatch(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public List<ArticleComment> findByIdIn(List<Long> ids) {
+        return this.articleCommentRepo.findByIdIn(ids);
     }
 }

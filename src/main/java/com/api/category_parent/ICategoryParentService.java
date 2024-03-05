@@ -20,4 +20,8 @@ public interface ICategoryParentService {
     String generateSlug(String name);
 
     List<CategoryParent> findAll(Sort sort);
+
+    Page<CategoryParent> findCategoryParentList(CategoryParentParams params, boolean isAdmin);
+
+    boolean deleteMultiple(List<Long> ids);
 }

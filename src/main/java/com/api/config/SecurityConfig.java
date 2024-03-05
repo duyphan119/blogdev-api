@@ -64,7 +64,9 @@ public class SecurityConfig {
                                                 .requestMatchers(PATCH, "/auth/refresh-token")
                                                 .permitAll()
                                                 // Role Admin
-                                                .requestMatchers(GET, "/subscriber", "/role", "/contact")
+                                                .requestMatchers(GET, "/subscriber", "/role", "/contact",
+                                                                "/article/admin", "/category/admin",
+                                                                "/category-parent/admin")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 .requestMatchers(POST, "/category", "/category-parent", "/article")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
@@ -72,7 +74,8 @@ public class SecurityConfig {
                                                                 "/article/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 .requestMatchers(DELETE, "/category/*", "/category-parent/*",
-                                                                "/article/*", "/subscriber/*",
+                                                                "/category", "/category-parent",
+                                                                "/article", "/article/*", "/subscriber/*",
                                                                 "/contact/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name())
                                                 // Role Admin && user
@@ -88,6 +91,7 @@ public class SecurityConfig {
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .requestMatchers(DELETE, "/article-comment/*",
                                                                 "/article-reply-comment/*", "/article/author/*",
+                                                                "/article-tag",
                                                                 "/article-tag/*")
                                                 .hasAnyAuthority(RoleName.ADMIN.name(), RoleName.USER.name())
                                                 .anyRequest()

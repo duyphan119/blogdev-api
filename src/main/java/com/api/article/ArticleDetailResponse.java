@@ -52,5 +52,7 @@ public class ArticleDetailResponse {
     @JsonProperty("is_public")
     private Boolean isPublic;
 
+    private Boolean approved;
+
     private Set<ArticleTag> tags;
 }

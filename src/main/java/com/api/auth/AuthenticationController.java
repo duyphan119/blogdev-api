@@ -135,10 +135,25 @@ public class AuthenticationController {
         try {
             Optional<CustomUserDetails> userDetailsOptional = authenticationService.getUserDetails();
             if (userDetailsOptional.isPresent()) {
-                Author author = this.userService.convertUserToAuthor(userDetailsOptional.get().getUser());
-
+                User user = userDetailsOptional.get().getUser();
                 return ResponseEntity.status(ApiConstant.STATUS_200).body(
-                        ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(author)
+                        ApiResponse.builder().message(ApiConstant.MSG_SUCCESS).data(ProfileResponse.builder()
+                                .email(user.getEmail())
+                                .twitterUrl(user.getTwitterUrl())
+                                .facebookUrl(user.getFacebookUrl())
+                                .youtubeUrl(user.getYoutubeUrl())
+                                .lastName(user.getLastName())
+                                .linkedinUrl(user.getLinkedinUrl())
+                                .githubUrl(user.getGithubUrl())
+                                .firstName(user.getFirstName())
+                                .fullName(user.getFullName())
+                                .introduction(user.getIntroduction())
+                                .id(user.getId())
+                                .pinterestUrl(user.getPinterestUrl())
+                                .imageUrl(user.getImageUrl())
+                                .career(user.getCareer())
+                                .roles(user.getRoles())
+                                .build())
                                 .build());
             }
 

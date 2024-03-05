@@ -1,6 +1,7 @@
 package com.api.auth;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -8,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.api.jwt.JwtService;
+import com.api.role.Role;
 import com.api.user.CustomUserDetails;
 import com.api.user.User;
 
@@ -50,6 +52,23 @@ public class AuthenticationService implements IAuthenticationService {
                 .accessToken(accessToken).refreshToken(newRefreshToken)
                 .accessTokenExpired(jwtService.getJwtExpiration()).build();
         return authenticationResponse;
+    }
+
+    @Override
+    public boolean isAdmin() {
+        Optional<CustomUserDetails> optionalUserDetails = this.getUserDetails();
+
+        if (optionalUserDetails.isPresent()) {
+            Set<Role> roles = optionalUserDetails.get().getUser().getRoles();
+
+            for (Role role : roles) {
+                if (role.getName().equals("ADMIN")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 }

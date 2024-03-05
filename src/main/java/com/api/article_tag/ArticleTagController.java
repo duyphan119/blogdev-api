@@ -1,5 +1,7 @@
 package com.api.article_tag;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -186,6 +188,69 @@ public class ArticleTagController {
 
             }
 
+        }
+
+        return ResponseEntity.status(ApiConstant.STATUS_500)
+                .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                        .data("Something went wrong")
+                        .build());
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<Object> deleteArticleTags(@RequestParam("ids") String idsStr) {
+
+        List<Long> ids = new ArrayList<>();
+
+        String[] idsStrSplitted = idsStr.split("_");
+
+        for (int i = 0; i < idsStrSplitted.length; i++) {
+            ids.add(Long.valueOf(idsStrSplitted[i]));
+        }
+
+        List<ArticleTag> articleTagList = this.articleTagService.findByIdIn(ids);
+
+        if (articleTagList.size() < ids.size()) {
+            return ResponseEntity.status(ApiConstant.STATUS_404)
+                    .body(ApiResponse.builder().message(ApiConstant.MSG_ERROR)
+                            .data("Not Found")
+                            .build());
+        }
+
+        CustomUserDetails userDetails = this.authenticationService.getUserDetails().get();
+
+        boolean isRoleAdmin = false;
+
+        Set<Role> roles = userDetails.getUser().getRoles();
+
+        for (Role accountRole : roles) {
+            if (accountRole.getName().equals("ADMIN")) {
+                isRoleAdmin = true;
+            }
+        }
+
+        Long userId = userDetails.getUser().getId();
+
+        int countUserArticle = 0;
+
+        if (!isRoleAdmin) {
+
+            for (ArticleTag articleTag : articleTagList) {
+                if (articleTag.getCreatedBy().equals(userId)) {
+                    countUserArticle++;
+                }
+            }
+        }
+
+        if (isRoleAdmin || countUserArticle == articleTagList.size()) {
+
+            boolean isDeleted = this.articleTagService.deleteMultiple(ids);
+            if (isDeleted) {
+
+                return ResponseEntity.status(ApiConstant.STATUS_200)
+                        .body(ApiResponse.builder().message(ApiConstant.MSG_SUCCESS)
+                                .data("Deleted")
+                                .build());
+            }
         }
 
         return ResponseEntity.status(ApiConstant.STATUS_500)

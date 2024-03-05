@@ -14,9 +14,6 @@ import org.springframework.stereotype.Service;
 
 import com.api.article.Article;
 import com.api.article.ArticleRepository;
-import com.api.article.ArticleService;
-import com.api.article_comment.ArticleComment;
-import com.api.article_comment.ArticleCommentService;
 import com.api.category.Category;
 import com.api.category.CategoryRepository;
 import com.api.utils.Helper;
@@ -26,12 +23,6 @@ public class WebService implements IWebService {
 
     @Autowired
     private ArticleRepository articleRepo;
-
-    @Autowired
-    private ArticleService articleService;
-
-    @Autowired
-    private ArticleCommentService articleCommentService;
 
     @Autowired
     private CategoryRepository categoryRepo;
@@ -44,7 +35,7 @@ public class WebService implements IWebService {
         List<Long> ids = new ArrayList<>();
         ids.add(Long.valueOf(-1));
 
-        List<Article> totalArticles = getTodayArticles(ids);
+        List<Article> totalArticles = getTodayArticles(ids, 3);
         List<Article> mostRecentArticles = getMostRecentArticles(ids);
         List<Article> longreadsArticles = getLongreadsArticles(ids);
         List<CategoryArticleResponse> categoryArticles = getCategoryArticles(ids);
@@ -69,22 +60,24 @@ public class WebService implements IWebService {
                 .collect(Collectors.toList());
     }
 
-    public List<Article> getTodayArticles(List<Long> ids) {
+    public List<Article> getTodayArticles(List<Long> ids, int limit) {
 
-        Pageable pageable = helper.generatePageable(3, 1, "id", "desc");
+        Pageable pageable = helper.generatePageable(limit, 1, "id", "desc");
 
         Date now = new Date();
         Date startOfDay = DateUtils.truncate(now, java.util.Calendar.DAY_OF_MONTH);
         Date endOfDay = DateUtils.addMilliseconds(DateUtils.ceiling(now, java.util.Calendar.DAY_OF_MONTH), -1);
 
-        Page<Article> articlePage = this.articleRepo.findByCreatedAtBetweenAndIdNotIn(startOfDay, endOfDay,
+        Page<Article> articlePage = this.articleRepo.findByApprovedAndIsPublicAndCreatedAtBetweenAndIdNotIn(true, true,
+                startOfDay, endOfDay,
                 ids,
                 pageable);
         ids.addAll(getIds(articlePage.getContent()));
-        if (articlePage.getContent().size() < 3) {
-            Pageable pageable2 = helper.generatePageable(3, 1, "id", "desc");
+        if (articlePage.getContent().size() < limit) {
+            Pageable pageable2 = helper.generatePageable(limit - articlePage.getContent().size(), 1, "id", "desc");
 
-            Page<Article> articlePage2 = this.articleRepo.findByIdNotIn(ids, pageable2);
+            Page<Article> articlePage2 = this.articleRepo.findByApprovedAndIsPublicAndIdNotIn(true, true, ids,
+                    pageable2);
             ids.addAll(getIds(articlePage2.getContent()));
             List<Article> newList = new ArrayList<>();
             newList.addAll(articlePage.getContent());
@@ -99,7 +92,7 @@ public class WebService implements IWebService {
 
         Pageable pageable = helper.generatePageable(5, 1, "id", "desc");
 
-        Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
+        Page<Article> articlePage = this.articleRepo.findByApprovedAndIsPublicAndIdNotIn(true, true, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
         return articlePage.getContent();
     }
@@ -108,7 +101,8 @@ public class WebService implements IWebService {
 
         Pageable pageable = helper.generatePageable(5, 1, "id", "desc");
 
-        Page<Article> articlePage = this.articleRepo.findByIsLongreadsAndIdNotIn(true, ids, pageable);
+        Page<Article> articlePage = this.articleRepo.findByApprovedAndIsPublicAndIsLongreadsAndIdNotIn(true, true, true,
+                ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
         return articlePage.getContent();
     }
@@ -142,7 +136,7 @@ public class WebService implements IWebService {
 
         Pageable pageable = helper.generatePageable(5, 1, "views", "desc");
 
-        Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
+        Page<Article> articlePage = this.articleRepo.findByApprovedAndIsPublicAndIdNotIn(true, true, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
         return articlePage.getContent();
     }
@@ -151,7 +145,7 @@ public class WebService implements IWebService {
 
         Pageable pageable = helper.generatePageable(5, 1, "commentCount", "desc");
 
-        Page<Article> articlePage = this.articleRepo.findByIdNotIn(ids, pageable);
+        Page<Article> articlePage = this.articleRepo.findByApprovedAndIsPublicAndIdNotIn(true, true, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
         return articlePage.getContent();
     }
@@ -160,45 +154,11 @@ public class WebService implements IWebService {
 
         Pageable pageable = helper.generatePageable(10, 1, "id", "desc");
 
-        Page<Article> articlePage = this.articleRepo.findByViewsGreaterThanAndCommentCountGreaterThanAndIdNotIn(1001,
-                10, ids, pageable);
+        Page<Article> articlePage = this.articleRepo
+                .findByApprovedAndIsPublicAndViewsGreaterThanAndCommentCountGreaterThanAndIdNotIn(true, true, 1001,
+                        10, ids, pageable);
         ids.addAll(getIds(articlePage.getContent()));
         return articlePage.getContent();
-    }
-
-    @Override
-    public ArticleDetailPageResponse findArticleDetailPageData(String slug) {
-        Optional<Article> articleOptional = this.articleRepo.findBySlug(slug);
-        List<Long> ids = new ArrayList<>();
-        ArticleDetailPageResponse articleDetailPageResponse = ArticleDetailPageResponse.builder().build();
-        if (articleOptional.isPresent()) {
-            articleDetailPageResponse
-                    .setArticle(this.articleService.convertToArticleDetailResponse(articleOptional.get()));
-            Pageable pageable = helper.generatePageable(8, 1, "createdAt", "desc");
-            List<Article> recommendArticles = this.articleRepo
-                    .findByIdNotAndCategory_Id(articleDetailPageResponse.getArticle().getId(),
-                            articleDetailPageResponse.getArticle().getCategory().getId(), pageable)
-                    .getContent();
-            articleDetailPageResponse
-                    .setRecommendArticles(recommendArticles);
-            ids.add(articleDetailPageResponse.getArticle().getId());
-            ids.addAll(this.getIds(recommendArticles));
-            List<Article> mostRecentArticles = getMostRecentArticles(ids);
-            List<Article> mostViewsArticles = getMostViewsArticles(ids);
-            List<Article> mostCommentsArticles = getMostCommentsArticles(ids);
-            List<Article> trendingArticles = getTrendingArticles(ids);
-            articleDetailPageResponse.setMostRecentArticles(mostRecentArticles);
-            articleDetailPageResponse.setMostViewsArticles(mostViewsArticles);
-            articleDetailPageResponse.setMostCommentsArticles(mostCommentsArticles);
-            articleDetailPageResponse.setTrendingArticles(trendingArticles);
-        }
-        Page<ArticleComment> articleCommentPage = this.articleCommentService.paginateByArticleSlug(slug, 5, 1,
-                "createdAt", "desc", "");
-
-        articleDetailPageResponse.setComments(articleCommentPage.getContent());
-        articleDetailPageResponse.setCommentCount(articleCommentPage.getTotalElements());
-
-        return articleDetailPageResponse;
     }
 
     @Override
@@ -207,7 +167,8 @@ public class WebService implements IWebService {
         ids.add(Long.valueOf(-1));
 
         if (!articleSlug.equals("")) {
-            Optional<Article> articleOptional = this.articleRepo.findBySlug(articleSlug);
+            Optional<Article> articleOptional = this.articleRepo.findByApprovedAndIsPublicAndSlug(true, true,
+                    articleSlug);
             if (articleOptional.isPresent()) {
                 ids.add(articleOptional.get().getId());
             }

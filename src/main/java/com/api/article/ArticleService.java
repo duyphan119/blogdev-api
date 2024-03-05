@@ -1,5 +1,6 @@
 package com.api.article;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,7 @@ public class ArticleService implements IArticleService {
                 .views(article.getViews())
                 .isPublic(article.getIsPublic())
                 .tags(article.getTags())
+                .approved(article.getApproved())
                 .build();
     }
 
@@ -111,7 +113,8 @@ public class ArticleService implements IArticleService {
         Optional<Article> articleOptional = this.articleRepo.findBySlug(articleSlug);
         Pageable pageable = helper.generatePageable(8, 1, "createdAt", "desc");
         if (articleOptional.isPresent()) {
-            return this.articleRepo.findByIsPublicAndIdNotAndCategory_Id(true, articleOptional.get().getId(),
+            return this.articleRepo.findByApprovedAndIsPublicAndIdNotAndCategory_Id(true, true,
+                    articleOptional.get().getId(),
                     articleOptional.get().getCategory().getId(), pageable);
         }
         return Page.empty();
@@ -136,11 +139,45 @@ public class ArticleService implements IArticleService {
     }
 
     @Override
-    public Page<Article> paginateByCategorySlug(Integer limit, Integer page, String sortBy, String sortType,
-            String categorySlug) {
-        Pageable pageable = helper.generatePageable(limit, page, sortBy, sortType);
-
-        return articleRepo.findByIsPublicAndCategory_Slug(true, categorySlug, pageable);
+    public boolean deleteMultiple(List<Long> ids) {
+        try {
+            this.articleRepo.deleteAllByIdInBatch(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
+    @Override
+    public List<Article> findByIdIn(List<Long> ids) {
+        return this.articleRepo.findByIdIn(ids);
+    }
+
+    @Override
+    public Page<Article> findArticles(ArticleParams params, boolean isAdmin) {
+        Integer pageSize = params.getPageSize();
+        Integer page = params.getPage();
+        String sortBy = params.getSortBy();
+        String sortType = params.getSortType();
+        String keyword = params.getKeyword();
+        String categorySlug = params.getCategorySlug();
+        Pageable pageable = Pageable.unpaged();
+
+        if (!pageSize.equals(-1)) {
+            pageable = helper.generatePageable(pageSize, page, sortBy, sortType);
+        }
+
+        if (!categorySlug.isEmpty()) {
+            if (isAdmin) {
+                return articleRepo.findByCategory_Slug(categorySlug, pageable);
+            }
+            return articleRepo.findByApprovedAndIsPublicAndCategory_Slug(true, true, categorySlug, pageable);
+        }
+
+        if (isAdmin) {
+            return articleRepo.findByTitleIgnoreCaseContaining(keyword, pageable);
+        }
+
+        return articleRepo.findByApprovedAndIsPublicAndTitleIgnoreCaseContaining(true, true, keyword, pageable);
+    }
 }
